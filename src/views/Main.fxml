@@ -50,7 +50,7 @@
                              </Insets>
                          </VBox.margin>
                         <content>
-                            <FlowPane fx:id="terminalContainer" hgap="10" vgap="10" />
+                            <FlowPane fx:id="fp_terminales" hgap="10" vgap="10" />
                         </content>
                      </ScrollPane>
                  </children>

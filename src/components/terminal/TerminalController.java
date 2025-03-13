@@ -13,6 +13,7 @@ import javafx.geometry.Pos;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ProgressIndicator;
+import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import models.Terminal;
@@ -31,6 +32,10 @@ import java.util.ResourceBundle;
 public class TerminalController implements Initializable {
 
     @FXML
+    private HBox hbCerrar;
+    @FXML
+    private Label lblCerrar;
+    @FXML
     private VBox terminalPane;
     @FXML
     private Label lblNombre;
@@ -42,6 +47,8 @@ public class TerminalController implements Initializable {
     private Label lblUltSincronizacion;
     @FXML
     private Button btnRespaldo;
+    @FXML
+    private Label lblUpload;
     ObjectProperty<StackPane> op_root = new SimpleObjectProperty<StackPane>();
     StackPane root;
     Terminal terminal;
@@ -51,6 +58,10 @@ public class TerminalController implements Initializable {
         terminalPane.getStylesheets().add(getClass().getResource("Terminal.css").toExternalForm());
         lblNombre.getStyleClass().add("terminal-titulo");
         lblIP.getStyleClass().add("subtitulo");
+        lblCerrar.setText("\ue5cd");
+        lblCerrar.setStyle("-fx-pref-width: 20; -fx-text-fill: #e67474");
+        hbCerrar.toFront();
+        lblUpload.setText("\ue2c3");
         terminalPane.getStyleClass().add("terminal");
         lblUltSincronizacion.getStyleClass().add("terminal-sync");
 

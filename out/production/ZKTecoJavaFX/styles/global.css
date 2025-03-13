@@ -748,3 +748,12 @@
 	-fx-font-size: 20px;
 	-fx-text-fill: #FFF;
 }
+
+.mensaje {
+	-fx-background-color: #FFCDD2;
+	-fx-background-radius: 5;
+	-fx-padding: 8;
+	-fx-border-color: -swatch-dark-grey;
+	-fx-border-width: 1;
+	-fx-border-radius: 5;
+}

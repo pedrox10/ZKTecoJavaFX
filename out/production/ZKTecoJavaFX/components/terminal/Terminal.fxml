@@ -1,22 +1,40 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import java.lang.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.geometry.*?>
+<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
-<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.layout.*?>
 
-<VBox fx:id="terminalPane" alignment="CENTER" spacing="5" styleClass="card" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="components.terminal.TerminalController">
+<StackPane fx:id="terminalStackPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="components.terminal.TerminalController">
    <children>
-           <Label fx:id="lblNombre" styleClass="card-title" text="Planta Baja" />
-           <Separator />
-           <Label fx:id="lblIP" styleClass="card-subtitle" text="192.168.70.199" />
-           <VBox alignment="CENTER" spacing="-15">
-              <children>
-                  <Label styleClass="control-label" text="Ultimo Respaldo" />
-                  <Label fx:id="lblUltSincronizacion" styleClass="control-label" />
-              </children>
-           </VBox>
-           <Button fx:id="btnConectar" onAction="#verificarConexion" styleClass="button-flat" text="Probar Conexión" />
-           <Button fx:id="btnRespaldo" disable="true" onAction="#generarBackup" styleClass="button-flat" text="Generar Backup" />
+       <VBox fx:id="terminalPane" alignment="CENTER" spacing="5" styleClass="card">
+           <children>
+               <Label fx:id="lblNombre" styleClass="card-title" text="Planta Baja" />
+               <Separator />
+               <Label fx:id="lblIP" styleClass="card-subtitle" text="192.168.70.199" />
+               <VBox alignment="CENTER" spacing="-15">
+                   <children>
+                       <Label styleClass="control-label" text="Ultimo Respaldo" />
+                       <Label fx:id="lblUltSincronizacion" styleClass="control-label" />
+                   </children>
+               </VBox>
+               <Button fx:id="btnConectar" onAction="#verificarConexion" styleClass="button-flat" text="Probar Conexión" />
+            <HBox alignment="CENTER">
+               <children>
+                     <Button fx:id="btnRespaldo" disable="true" onAction="#generarBackup" styleClass="button-flat" text="Generar Backup" />
+                  <Label fx:id="lblUpload" styleClass="icon" />
+               </children>
+            </HBox>
+           </children>
+       </VBox>
+       <HBox fx:id="hbCerrar" alignment="TOP_RIGHT" maxHeight="40.0" maxWidth="40.0" StackPane.alignment="TOP_RIGHT">
+           <children>
+               <Label fx:id="lblCerrar" styleClass="icon" text="HI" />
+           </children>
+         <StackPane.margin>
+            <Insets />
+         </StackPane.margin>
+       </HBox>
    </children>
-    </VBox>
+</StackPane>
