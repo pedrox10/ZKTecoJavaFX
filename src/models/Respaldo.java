@@ -11,5 +11,8 @@ public class Respaldo extends Model<Respaldo> {
     @PrimaryKey(autoIncrement = true)
     public int id;
     public Date fecha;
+    public String nombre;
     public Terminal terminal;
+    public boolean fueSincronizado;
+
 }

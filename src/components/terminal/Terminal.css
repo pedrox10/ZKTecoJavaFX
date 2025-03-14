@@ -27,6 +27,7 @@
     -fx-border-radius: 5px;
     -fx-font-weight: bold;
 }
+
 .button-terminal:hover {
     -fx-background-color: #00c0a2;
 }

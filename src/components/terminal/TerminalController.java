@@ -1,18 +1,25 @@
 package components.terminal;
 
+import app.Main;
 import components.toast.ToastController;
+import controllers.AgregarTerminalController;
+import controllers.ListarRespaldosController;
+import controllers.MainController;
 import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
-import javafx.scene.control.Button;
-import javafx.scene.control.Label;
-import javafx.scene.control.ProgressIndicator;
+import javafx.scene.Parent;
+import javafx.scene.control.*;
+import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -27,6 +34,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.ListIterator;
 import java.util.ResourceBundle;
 
 public class TerminalController implements Initializable {
@@ -109,6 +117,32 @@ public class TerminalController implements Initializable {
     @FXML
     private void generarBackup() throws IOException {
         startLoading(root);
+    }
+
+    @FXML
+    private void verRespaldos() throws IOException{
+        Dialog dialogo = new Dialog();
+        dialogo.setTitle("Copias de Respaldo");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/ListarRespaldos.fxml"));
+        Parent respaldosNode = loader.load();
+
+        //Obtener el controlador y pasarle los datos
+        ListarRespaldosController lrc = loader.getController();
+        AnchorPane root = (AnchorPane) loader.getRoot();
+        dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        dialogo.getDialogPane().setContent(root);
+        dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+        dialogo.show();
+
+        Button btn_ok = (Button) dialogo.getDialogPane().lookupButton(ButtonType.OK);
+        btn_ok.addEventFilter(ActionEvent.ACTION, (ae) -> {
+
+        });
+        dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
+            @Override
+            public void handle(DialogEvent event) {
+            }
+        });
     }
 
     private void startLoading(StackPane root) {

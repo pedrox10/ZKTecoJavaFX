@@ -23,14 +23,14 @@
             <HBox alignment="CENTER">
                <children>
                      <Button fx:id="btnRespaldo" disable="true" onAction="#generarBackup" styleClass="button-flat" text="Generar Backup" />
-                  <Label fx:id="lblUpload" styleClass="icon" />
+                  <Label fx:id="lblUpload" onMouseClicked="#verRespaldos" styleClass="icon" />
                </children>
             </HBox>
            </children>
        </VBox>
        <HBox fx:id="hbCerrar" alignment="TOP_RIGHT" maxHeight="40.0" maxWidth="40.0" StackPane.alignment="TOP_RIGHT">
            <children>
-               <Label fx:id="lblCerrar" styleClass="icon" text="HI" />
+               <Label fx:id="lblCerrar" styleClass="icon" />
            </children>
          <StackPane.margin>
             <Insets />
