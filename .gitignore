@@ -1,0 +1,16 @@
+# Ignorar archivos de compilación y binarios
+/out/
+*.class
+*.jar
+*.war
+*.ear
+
+# Ignorar archivos del IDE
+/.idea/
+/.vscode/
+/*.iml
+
+# Ignorar archivos de dependencias y build tools
+/.gradle/
+/build/
+/target/

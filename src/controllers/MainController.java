@@ -102,7 +102,7 @@ public class MainController implements Initializable {
             Parent terminalNode = loader.load();
             TerminalController controller = loader.getController();
             terminalNode.setUserData(terminal);
-            controller.setTerminalData(terminal, root);
+            controller.setTerminalData(terminal, root, this);
             fp_terminales.getChildren().add(terminalNode);
         } catch (IOException e) {
             e.printStackTrace();

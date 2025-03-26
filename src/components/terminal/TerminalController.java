@@ -60,6 +60,7 @@ public class TerminalController implements Initializable {
     ObjectProperty<StackPane> op_root = new SimpleObjectProperty<StackPane>();
     StackPane root;
     Terminal terminal;
+    MainController mc;
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -85,7 +86,8 @@ public class TerminalController implements Initializable {
     }
 
     // Método para actualizar los datos de la tarjeta
-    public void setTerminalData(Terminal terminal, StackPane root) {
+    public void setTerminalData(Terminal terminal, StackPane root, MainController mc) {
+        this.mc = mc;
         this.terminal = terminal;
         lblNombre.setText(terminal.getNombre());
         lblIP.setText(terminal.getIp());
@@ -133,6 +135,8 @@ public class TerminalController implements Initializable {
         dialogo.getDialogPane().setContent(root);
         dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
         dialogo.show();
+        mc.pane_mascara.toFront();
+        mc.pane_mascara.setVisible(true);
 
         Button btn_ok = (Button) dialogo.getDialogPane().lookupButton(ButtonType.OK);
         btn_ok.addEventFilter(ActionEvent.ACTION, (ae) -> {
