@@ -145,6 +145,8 @@ public class TerminalController implements Initializable {
         dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
             @Override
             public void handle(DialogEvent event) {
+                mc.pane_mascara.toBack();
+                mc.pane_mascara.setVisible(false);
             }
         });
     }
