@@ -758,7 +758,40 @@
 	-fx-border-radius: 5;
 }
 
-.flow-pane {
+.scroll-pane {
+	-fx-background-color: transparent;
 	-fx-border-color: transparent;
-	-fx-background-color: red;
 }
+
+.scroll-pane:focused {
+	-fx-border-color: transparent;
+	-fx-background-insets: 0;
+	-fx-focus-color: transparent;
+	-fx-faint-focus-color: transparent;
+}
+
+.dialog-pane {
+	-fx-padding: 0;
+}
+
+.dialog-pane > *.button-bar {
+	-fx-padding: 0;
+}
+
+.dialog-pane > *.content {
+	-fx-padding: 0;
+}
+
+.table-row-cell:filled:selected {
+	-fx-background-color: #d7f2fd; /* Color de fondo de la fila seleccionada */
+}
+
+.table-row-cell:filled:selected .table-cell {
+	-fx-text-fill: -fx-text-base-color; /* Color del texto */
+}
+
+/*
+.table-row-cell:filled:selected .text {
+	-fx-fill: -fx-text-base-color; !* Color del texto dentro de celdas *!
+}
+*/

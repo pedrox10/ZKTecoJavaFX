@@ -59,7 +59,8 @@ public class TerminalController implements Initializable {
     private Label lblUpload;
     ObjectProperty<StackPane> op_root = new SimpleObjectProperty<StackPane>();
     StackPane root;
-    Terminal terminal;
+    Terminal terminal = null;
+    ObjectProperty<Terminal> op_terminal = new SimpleObjectProperty();
     MainController mc;
 
     @FXML
@@ -83,6 +84,13 @@ public class TerminalController implements Initializable {
                 }
             }
         });
+
+        op_terminal.addListener(new ChangeListener<Terminal>() {
+            @Override
+            public void changed(ObservableValue<? extends Terminal> observableValue, Terminal newValue, Terminal oldValue) {
+                terminal = newValue;
+            }
+        });
     }
 
     // Método para actualizar los datos de la tarjeta
@@ -102,6 +110,7 @@ public class TerminalController implements Initializable {
 
     @FXML
     private void verificarConexion() throws IOException {
+        System.out.println(terminal);
         String respuesta = ejecutarScriptPython("scriptpy/conectar.py", this.terminal.ip, this.terminal.puerto + " ");
         JSONObject respuestaJson = new JSONObject(respuesta);
         boolean conectado = respuestaJson.getBoolean("connected");
@@ -130,6 +139,7 @@ public class TerminalController implements Initializable {
 
         //Obtener el controlador y pasarle los datos
         ListarRespaldosController lrc = loader.getController();
+        lrc.initData(terminal);
         AnchorPane root = (AnchorPane) loader.getRoot();
         dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
         dialogo.getDialogPane().setContent(root);

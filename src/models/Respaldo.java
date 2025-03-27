@@ -15,4 +15,36 @@ public class Respaldo extends Model<Respaldo> {
     public Terminal terminal;
     public boolean fueSincronizado;
 
+    public Date getFecha() {
+        return fecha;
+    }
+
+    public void setFecha(Date fecha) {
+        this.fecha = fecha;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
+    public Terminal getTerminal() {
+        return terminal;
+    }
+
+    public void setTerminal(Terminal terminal) {
+        this.terminal = terminal;
+    }
+
+    public boolean isFueSincronizado() {
+        return fueSincronizado;
+    }
+
+    public void setFueSincronizado(boolean fueSincronizado) {
+        this.fueSincronizado = fueSincronizado;
+    }
 }
+

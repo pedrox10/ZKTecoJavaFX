@@ -25,6 +25,9 @@
                         <TableColumn fx:id="tc_nombre" prefWidth="292.0" text="Nombre" />
                         <TableColumn fx:id="tc_sincronizado" minWidth="0.0" prefWidth="141.0" text="¿Fue Sincronizado?" />
                     </columns>
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
                 </TableView>
             </children>
         </VBox>

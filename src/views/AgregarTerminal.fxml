@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="225.0" prefWidth="325.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AgregarTerminalController">
    <children>
-      <VBox alignment="TOP_CENTER" spacing="25.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <VBox alignment="TOP_CENTER" spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <HBox alignment="CENTER_LEFT" prefHeight="50.0" style="-fx-background-color: #295A8C;">
                <children>
@@ -17,42 +19,49 @@
                   </Label>
                </children>
             </HBox>
-            <HBox alignment="CENTER_LEFT" prefHeight="29.0" prefWidth="380.0" spacing="5.0">
-               <padding>
-                  <Insets left="5.0" />
-               </padding>
+            <VBox spacing="25.0">
                <children>
-                  <Label text="Nombre: " />
-                  <TextField fx:id="tf_nombre" prefHeight="34.0" prefWidth="230.0" />
-               </children>
-            </HBox>
-            <HBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="85.0" prefHeight="29.0" prefWidth="380.0" spacing="10.0">
-               <padding>
-                  <Insets left="5.0" />
-               </padding>
-               <children>
-                  <HBox alignment="CENTER">
+                  <HBox alignment="CENTER_LEFT" prefHeight="29.0" prefWidth="380.0" spacing="5.0">
+                     <padding>
+                        <Insets left="5.0" />
+                     </padding>
                      <children>
-                        <Label text="IP: " />
-                        <TextField fx:id="tf_ip" prefWidth="140.0" />
+                        <Label text="Nombre: " />
+                        <TextField fx:id="tf_nombre" prefHeight="34.0" prefWidth="230.0" />
                      </children>
                   </HBox>
-                  <HBox alignment="CENTER" layoutX="15.0" layoutY="10.0">
+                  <HBox alignment="CENTER_LEFT" layoutX="20.0" layoutY="85.0" prefHeight="29.0" prefWidth="380.0" spacing="10.0">
+                     <padding>
+                        <Insets left="5.0" />
+                     </padding>
                      <children>
-                        <Label text="Puerto: " />
-                        <TextField fx:id="tf_puerto" prefWidth="70.0" />
+                        <HBox alignment="CENTER">
+                           <children>
+                              <Label text="IP: " />
+                              <TextField fx:id="tf_ip" prefWidth="140.0" />
+                           </children>
+                        </HBox>
+                        <HBox alignment="CENTER" layoutX="15.0" layoutY="10.0">
+                           <children>
+                              <Label text="Puerto: " />
+                              <TextField fx:id="tf_puerto" prefWidth="70.0" />
+                           </children>
+                        </HBox>
                      </children>
                   </HBox>
+                  <HBox alignment="CENTER" layoutX="20.0" layoutY="231.0" spacing="15.0">
+                     <children>
+                        <Label fx:id="lbl_mensaje" prefHeight="30.0" prefWidth="410.0" style="-fx-text-fill: -fx-text-control-title-color;" styleClass="mensaje" visible="false" />
+                     </children>
+                     <VBox.margin>
+                        <Insets top="5.0" />
+                     </VBox.margin>
+                  </HBox>
                </children>
-            </HBox>
-            <HBox alignment="CENTER" layoutX="20.0" layoutY="231.0" spacing="10.0">
-               <children>
-                  <Label fx:id="lbl_mensaje" prefHeight="30.0" prefWidth="410.0" style="-fx-text-fill: -fx-text-control-title-color;" styleClass="mensaje" visible="false" />
-               </children>
-               <VBox.margin>
-                  <Insets top="5.0" />
-               </VBox.margin>
-            </HBox>
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+            </VBox>
          </children>
       </VBox>
    </children>

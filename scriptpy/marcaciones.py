@@ -34,6 +34,7 @@ try:
         "timestamp": serialize_datetime(record.timestamp)
         }
         aux.append(data)
+
     resultado = {
         "total_marcaciones": len(attendance_records),
         "numero_serie": serial_number,
