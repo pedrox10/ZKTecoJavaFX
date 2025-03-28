@@ -21,14 +21,11 @@ public class Main extends Application {
         MappingSession.registerEntity(Terminal.class);
         MappingSession.registerEntity(Respaldo.class);
         MappingSession.start();
-
         Font.loadFont(getClass().getResourceAsStream("/fonts/MaterialIcons-Regular.ttf"), 12);
         Font.loadFont(getClass().getResourceAsStream("/fonts/Roboto-Regular.ttf"), 12);
         Font.loadFont(getClass().getResourceAsStream("/fonts/Roboto-Medium.ttf"), 12);
-        //StackPane root = FXMLLoader.load(getClass().getResource("/views/Main.fxml"));
         FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/Main.fxml"));
         StackPane root = loader.load();
-
         // Obtener el controlador y pasarle la referencia del root
         MainController controller = loader.getController();
         controller.setRoot(root);
