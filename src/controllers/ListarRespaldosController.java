@@ -32,6 +32,7 @@ public class ListarRespaldosController implements Initializable {
     public TableColumn tc_nombre;
     public TableColumn tc_sincronizado;
     public Button btn_siguiente;
+    public Label ic_sync;
 
     ObjectProperty<Respaldo> op_respaldo = new SimpleObjectProperty<>();
     ObservableList<Respaldo> respaldos = FXCollections.observableArrayList();
@@ -72,6 +73,8 @@ public class ListarRespaldosController implements Initializable {
             }
         });
         btn_siguiente.disableProperty().bind(op_respaldo.isNull());
+        ic_sync.setText("\ue915");
+        ic_sync.setStyle("-fx-text-fill: red");
     }
 
     public void initData(Terminal terminal, MainController mc) {

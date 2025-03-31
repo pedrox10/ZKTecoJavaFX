@@ -794,6 +794,11 @@
 	-fx-text-fill: -fx-text-base-color; /* Color del texto */
 }
 
+.table-row-cell:focused {
+	-fx-border-color: transparent;
+	-fx-background-insets: 0;
+}
+
 /*
 .table-row-cell:filled:selected .text {
 	-fx-fill: -fx-text-base-color; !* Color del texto dentro de celdas *!

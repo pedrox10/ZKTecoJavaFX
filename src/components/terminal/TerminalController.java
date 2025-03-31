@@ -217,7 +217,7 @@ public class TerminalController implements Initializable {
 
     public static String ejecutarScriptPython(String scriptPath, String ip, String puerto) throws IOException {
         // Construir el comando
-        ProcessBuilder processBuilder = new ProcessBuilder("python", scriptPath, ip, puerto);
+        ProcessBuilder processBuilder = new ProcessBuilder("python3", scriptPath, ip, puerto);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
         // Leer la salida del script Python
