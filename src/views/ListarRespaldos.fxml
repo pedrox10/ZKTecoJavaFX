@@ -1,15 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
-<?import javafx.geometry.*?>
 <?import javafx.geometry.Insets?>
-<?import javafx.scene.control.*?>
-<?import javafx.scene.layout.*?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.CheckBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.SplitPane?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
 
-
-<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ListarRespaldosController">
+<AnchorPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ListarRespaldosController">
    <children>
-      <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="50.0" style="-fx-background-color: #295A8C;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="60.0" style="-fx-background-color: #295A8C;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <Label fx:id="lbl_titulo2" minHeight="50.0" prefHeight="50.0" style="-fx-text-fill: #FFFFFF;" styleClass="card-subtitle" text="Lista de Respaldos" textFill="WHITE">
                <HBox.margin>
@@ -18,11 +24,11 @@
             </Label>
          </children>
       </HBox>
-      <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="610.0" prefWidth="650.0" AnchorPane.topAnchor="50.0">
+      <StackPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="650.0" prefWidth="700.0" AnchorPane.topAnchor="60.0">
          <children>
-            <VBox fx:id="vb_primer_paso" alignment="TOP_CENTER" spacing="10.0">
+            <VBox fx:id="vb_primer_paso" alignment="TOP_CENTER" visible="false">
                <children>
-                  <TableView fx:id="tv_respaldos" prefHeight="545.0">
+                  <TableView fx:id="tv_respaldos" prefHeight="565.0">
                      <columns>
                         <TableColumn fx:id="tc_fecha" prefWidth="176.0" text="Fecha" />
                         <TableColumn fx:id="tc_nombre" prefWidth="292.0" text="Nombre" />
@@ -32,45 +38,63 @@
                         <Insets left="5.0" right="5.0" />
                      </padding>
                   </TableView>
-                  <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="10.0">
+                  <HBox alignment="CENTER_RIGHT" prefHeight="85.0" spacing="10.0" style="-fx-background-color: #DDD;">
                      <children>
-                        <Button fx:id="btn_cerrar" mnemonicParsing="false" onAction="#cerrarDialog" text="Button" />
-                        <Button mnemonicParsing="false" text="Button" />
+                        <Button fx:id="btn_cerrar" cancelButton="true" mnemonicParsing="false" onAction="#cerrarDialog" styleClass="button-raised" text="Cancelar" />
+                        <Button fx:id="btn_siguiente" defaultButton="true" mnemonicParsing="false" onAction="#irSiguiente" styleClass="button-raised" text="Siguiente" />
                      </children>
                      <VBox.margin>
-                        <Insets right="20.0" />
+                        <Insets />
                      </VBox.margin>
+                     <padding>
+                        <Insets right="20.0" />
+                     </padding>
                   </HBox>
                </children>
             </VBox>
-            <VBox fx:id="vb_segundo_paso" prefHeight="200.0" prefWidth="100.0" spacing="10.0" visible="false">
+            <VBox fx:id="vb_segundo_paso">
                <children>
-                  <SplitPane dividerPositions="0.5" prefHeight="545.0">
+                  <HBox fx:id="hb_cabecera" alignment="CENTER_LEFT" prefHeight="50.0" spacing="10.0">
+                     <children>
+                        <Label text="Contenido Nuevo">
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </Label>
+                        <Region HBox.hgrow="ALWAYS" />
+                        <Label text="-&gt;" />
+                        <Region layoutX="53.0" layoutY="10.0" HBox.hgrow="ALWAYS" />
+                        <Label text="Contenido Actual">
+                           <padding>
+                              <Insets left="10.0" right="10.0" />
+                           </padding>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <SplitPane dividerPositions="0.5" prefHeight="465.0">
                     <items>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                      <AnchorPane minHeight="0.0" minWidth="0.0">
                            <children>
                               <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <children>
-                                    <TableView layoutX="20.0" layoutY="6.0" prefHeight="200.0" prefWidth="200.0">
+                                    <TableView layoutX="20.0" layoutY="6.0" prefHeight="545.0">
                                        <columns>
-                                          <TableColumn prefWidth="75.0" text="#" />
-                                          <TableColumn prefWidth="75.0" text="Nombre" />
-                                          <TableColumn prefWidth="75.0" text="CI" />
+                                          <TableColumn minWidth="40.0" prefWidth="50.0" text="#" />
+                                          <TableColumn maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Nombre" />
                                        </columns>
                                     </TableView>
                                  </children>
                               </VBox>
                            </children>
                         </AnchorPane>
-                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="160.0" prefWidth="100.0">
+                      <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="545.0">
                            <children>
                               <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <children>
-                                    <TableView layoutX="20.0" layoutY="6.0" prefHeight="200.0" prefWidth="200.0">
+                                    <TableView layoutX="20.0" layoutY="6.0" prefHeight="545.0">
                                        <columns>
-                                          <TableColumn prefWidth="75.0" text="#" />
-                                          <TableColumn prefWidth="75.0" text="Nombre" />
-                                          <TableColumn prefWidth="75.0" text="CI" />
+                                          <TableColumn minWidth="40.0" prefWidth="50.0" text="#" />
+                                          <TableColumn maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Nombre" />
                                        </columns>
                                     </TableView>
                                  </children>
@@ -79,6 +103,24 @@
                         </AnchorPane>
                     </items>
                   </SplitPane>
+                  <HBox alignment="CENTER_LEFT" prefHeight="50.0">
+                     <children>
+                        <Label text="Se agregaran 200 nuevas marcaciones" />
+                        <CheckBox mnemonicParsing="false" text="Acepto guardar" />
+                     </children>
+                     <padding>
+                        <Insets left="10.0" right="10.0" />
+                     </padding>
+                  </HBox>
+                  <HBox alignment="CENTER_RIGHT" prefHeight="85.0" spacing="10.0" style="-fx-background-color: #DDD;">
+                     <children>
+                        <Button fx:id="btn_atras" mnemonicParsing="false" onAction="#irAtras" styleClass="button-raised" text="Atras" />
+                        <Button defaultButton="true" mnemonicParsing="false" styleClass="button-raised" text="Sincronizar" />
+                     </children>
+                     <padding>
+                        <Insets right="20.0" />
+                     </padding>
+                  </HBox>
                </children>
             </VBox>
          </children>

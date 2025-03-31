@@ -123,7 +123,11 @@
 	-fx-text-fill: -fx-text-button-colored;
 }
 
-.toggle-button:focused, .button:focused, .button:default:focused {
+.button:default:focused  {
+	-fx-background-color: -swatch-400;
+}
+
+.toggle-button:focused, .button:focused {
 	-fx-background-color: -swatch-light-grey;
 }
 

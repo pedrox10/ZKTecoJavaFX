@@ -15,14 +15,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.layout.AnchorPane;
-import javafx.scene.layout.HBox;
-import javafx.scene.layout.StackPane;
-import javafx.scene.layout.VBox;
+import javafx.scene.layout.*;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import models.Terminal;
@@ -35,6 +33,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -111,8 +110,8 @@ public class TerminalController implements Initializable {
 
     @FXML
     private void verificarConexion() throws IOException {
-        System.out.println(terminal);
         String respuesta = ejecutarScriptPython("scriptpy/conectar.py", this.terminal.ip, this.terminal.puerto + " ");
+        System.out.println(respuesta);
         JSONObject respuestaJson = new JSONObject(respuesta);
         boolean conectado = respuestaJson.getBoolean("connected");
         ToastController toast;
@@ -143,7 +142,10 @@ public class TerminalController implements Initializable {
         AnchorPane root = (AnchorPane) loader.getRoot();
         dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
         dialogo.getDialogPane().setContent(root);
-        dialogo.getDialogPane().setContent(root);
+        Node buttonBar = dialogo.getDialogPane().lookup(".button-bar");
+        if (buttonBar != null) {
+            ((Pane) buttonBar.getParent()).getChildren().remove(buttonBar);
+        }
         Window window = dialogo.getDialogPane().getScene().getWindow();
         window.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
@@ -215,7 +217,7 @@ public class TerminalController implements Initializable {
 
     public static String ejecutarScriptPython(String scriptPath, String ip, String puerto) throws IOException {
         // Construir el comando
-        ProcessBuilder processBuilder = new ProcessBuilder("python3", scriptPath, ip, puerto);
+        ProcessBuilder processBuilder = new ProcessBuilder("python", scriptPath, ip, puerto);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
         // Leer la salida del script Python

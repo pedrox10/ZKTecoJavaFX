@@ -36,11 +36,11 @@ public class ToastController {
 
     private void setup(String tipo, String title, String message) {
         if(tipo.equalsIgnoreCase("success")) {
-            iconLabel.setStyle("-fx-text-fill: #2f902f; -fx-font-size: 36px;");
+            iconLabel.setStyle("-fx-text-fill: #2f902f;");
             iconLabel.setText("\ue86c");
         } else {
             if(tipo.equalsIgnoreCase("error")) {
-                iconLabel.setStyle("-fx-text-fill: #ce5656; -fx-font-size: 36px;");
+                iconLabel.setStyle("-fx-text-fill: #ce5656;");
                 iconLabel.setText("\ue15c");
             }
         }

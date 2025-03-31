@@ -14,10 +14,7 @@ import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.scene.Node;
-import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
-import javafx.scene.control.Dialog;
-import javafx.scene.control.DialogEvent;
+import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.Parent;
 import models.Terminal;
@@ -72,7 +69,11 @@ public class MainController implements Initializable {
         AnchorPane root = (AnchorPane) loader.getRoot();
         dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
         dialogo.getDialogPane().setContent(root);
-        dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.CANCEL, ButtonType.OK);
+        dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ButtonBar buttonBar = (ButtonBar) dialogo.getDialogPane().lookup(".button-bar");
+        if (buttonBar != null) {
+            buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_LINUX); // "Cancelar" antes que "Aceptar"
+        }
         dialogo.show();
         pane_mascara.setVisible(true);
         pane_mascara.toFront();
