@@ -34,9 +34,18 @@
                <children>
                   <TableView fx:id="tv_respaldos" prefHeight="585.0">
                      <columns>
-                        <TableColumn fx:id="tc_fecha" prefWidth="176.0" text="Fecha" />
-                        <TableColumn fx:id="tc_nombre" prefWidth="292.0" text="Nombre" />
-                        <TableColumn fx:id="tc_sincronizado" minWidth="0.0" prefWidth="141.0" text="¿Fue Sincronizado?" />
+                        <TableColumn fx:id="tc_fecha" prefWidth="175.0" text="Fecha Respaldo">
+                           <graphic>
+                              <Label fx:id="ic_fecha" styleClass="icon" text="X" />
+                           </graphic></TableColumn>
+                        <TableColumn fx:id="tc_nombre" prefWidth="340.0" text="Nombre Archivo">
+                           <graphic>
+                              <Label fx:id="ic_archivo" styleClass="icon" text="X" />
+                           </graphic></TableColumn>
+                        <TableColumn fx:id="tc_fecha_sincronizacion" minWidth="0.0" prefWidth="175.0" text="¿Fue Sincronizado?">
+                           <graphic>
+                              <Label fx:id="ic_sincronizado" styleClass="icon" text="X" />
+                           </graphic></TableColumn>
                      </columns>
                      <padding>
                         <Insets left="5.0" right="5.0" />
@@ -81,10 +90,10 @@
                            <children>
                               <VBox AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
                                  <children>
-                                    <TableView layoutX="20.0" layoutY="6.0" prefHeight="545.0">
+                                    <TableView fx:id="tv_nuevos" layoutX="20.0" layoutY="6.0" prefHeight="545.0">
                                        <columns>
-                                          <TableColumn minWidth="40.0" prefWidth="50.0" text="#" />
-                                          <TableColumn maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Nombre" />
+                                          <TableColumn fx:id="tc_nuevos_num" minWidth="40.0" prefWidth="50.0" text="#" />
+                                          <TableColumn fx:id="tc_nuevos_nombre" maxWidth="1.7976931348623157E308" minWidth="200.0" prefWidth="-1.0" text="Nombre" />
                                        </columns>
                                     </TableView>
                                  </children>

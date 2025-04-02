@@ -15,11 +15,26 @@ import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import models.Respaldo;
 import models.Terminal;
+import models.Usuario;
+import org.json.JSONArray;
+import org.json.JSONObject;
 import org.orman.mapper.Model;
 import org.orman.mapper.ModelQuery;
 import org.orman.sql.C;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
 import java.net.URL;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.ResourceBundle;
 
 public class ListarRespaldosController implements Initializable {
@@ -30,20 +45,60 @@ public class ListarRespaldosController implements Initializable {
     public TableView tv_respaldos;
     public TableColumn tc_fecha;
     public TableColumn tc_nombre;
-    public TableColumn tc_sincronizado;
+    public TableColumn tc_fecha_sincronizacion;
+    public Label ic_fecha;
+    public Label ic_archivo;
+    public Label ic_sincronizado;
     public Button btn_siguiente;
+
+    public TableView tv_nuevos;
+    public TableColumn tc_nuevos_nombre;
     public Label ic_sync;
 
-    ObjectProperty<Respaldo> op_respaldo = new SimpleObjectProperty<>();
     ObservableList<Respaldo> respaldos = FXCollections.observableArrayList();
+    ObjectProperty<Respaldo> opRespaldo = new SimpleObjectProperty<>();
     Terminal terminal = null;
     MainController mc = null;
+    Respaldo respaldoActual = null;
 
     @Override
     public void initialize(URL event, ResourceBundle rb) {
         tc_fecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
+        tc_fecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
+        tc_fecha.setCellFactory(column -> new TableCell<Respaldo, Date>() {
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText(null);
+                } else {
+                    // Convertir Date a LocalDateTime
+                    LocalDateTime localDateTime = Instant.ofEpochMilli(item.getTime())
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime();
+                    // Formatear y mostrar la fecha
+                    setText(localDateTime.format(formatter));
+                }
+            }
+        });
         tc_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
-        tc_sincronizado.setCellValueFactory(new PropertyValueFactory<>("fueSincronizado"));
+        tc_fecha_sincronizacion.setCellValueFactory(new PropertyValueFactory<>("fechaSincronizacion"));
+        tc_fecha_sincronizacion.setCellFactory(column -> new TableCell<Respaldo, Date>() {
+            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+            @Override
+            protected void updateItem(Date item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty || item == null) {
+                    setText("");
+                } else {
+                    LocalDateTime localDateTime = Instant.ofEpochMilli(item.getTime())
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDateTime();
+                    setText("El " + localDateTime.format(formatter));
+                }
+            }
+        });
         tv_respaldos.setRowFactory(tv -> new TableRow<Respaldo>() {
             @Override
             protected void updateItem(Respaldo item, boolean empty) {
@@ -52,7 +107,7 @@ public class ListarRespaldosController implements Initializable {
                     setDisable(false);
                     setStyle(""); // Restablece el estilo
                 } else {
-                    if (item.fueSincronizado) { // Suponiendo que tienes un método `isSincronizado()`
+                    if (item.fechaSincronizacion != null) {
                         setDisable(true);
                         setStyle("-fx-opacity: 0.65;"); // Aplica un estilo visual para indicar que está deshabilitado
                     } else {
@@ -66,15 +121,27 @@ public class ListarRespaldosController implements Initializable {
             @Override
             public void changed(ObservableValue<? extends Respaldo> observable, Respaldo oldValue, Respaldo newValue) {
                 if(newValue != null) {
-                    op_respaldo.setValue(newValue);
-                } else {
-                    op_respaldo.setValue(null);
+                    opRespaldo.setValue(newValue);
                 }
             }
         });
-        btn_siguiente.disableProperty().bind(op_respaldo.isNull());
+        opRespaldo.addListener(new ChangeListener<Respaldo>() {
+            @Override
+            public void changed(ObservableValue<? extends Respaldo> observableValue, Respaldo oldValue, Respaldo newValue) {
+                respaldoActual = newValue;
+            }
+        });
+        ic_fecha.setText("\ue916");
+        ic_fecha.setStyle("-fx-text-fill: #7553d3");
+        ic_archivo.setText("\ue24d");
+        ic_archivo.setStyle("-fx-text-fill: #64ddc7");
+        ic_sincronizado.setText("\ue915");
+        ic_sincronizado.setStyle("-fx-text-fill: #e84b4b");
+        btn_siguiente.disableProperty().bind(opRespaldo.isNull());
+
+        tc_nuevos_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         ic_sync.setText("\ue915");
-        ic_sync.setStyle("-fx-text-fill: red");
+        ic_sync.setStyle("-fx-text-fill: #e84b4b");
     }
 
     public void initData(Terminal terminal, MainController mc) {
@@ -98,6 +165,14 @@ public class ListarRespaldosController implements Initializable {
     public void irSiguiente(ActionEvent event) {
         vb_primer_paso.setVisible(false);
         vb_segundo_paso.setVisible(true);
+        System.out.println(respaldoActual.nombre);
+        File file = new File(respaldoActual.nombre);
+        cargarBackup(file);
+        try {
+            System.out.println(requestUsuarios(1));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @FXML
@@ -106,4 +181,51 @@ public class ListarRespaldosController implements Initializable {
         vb_segundo_paso.setVisible(false);
     }
 
+    public void cargarBackup(File archivoBackup) {
+        try (BufferedReader reader = new BufferedReader(new FileReader(archivoBackup))) {
+            StringBuilder sb = new StringBuilder();
+            String linea;
+            while ((linea = reader.readLine()) != null) {
+                sb.append(linea);
+            }
+            // Convertir a JSONObject
+            JSONObject jsonObject = new JSONObject(sb.toString());
+            // Obtener el array de usuarios
+            JSONArray usuariosArray = jsonObject.getJSONArray("usuarios");
+            // Convertir cada objeto a la clase Usuario
+            List<Usuario> nuevosUsuarios = new ArrayList<>();
+            for (int i = 0; i < usuariosArray.length(); i++) {
+                JSONObject u = usuariosArray.getJSONObject(i);
+                int id = u.getInt("user_id");
+                String nombre = u.getString("name");
+                System.out.println(id + " " + nombre);
+                nuevosUsuarios.add(new Usuario(id, nombre));
+            }
+            tv_nuevos.getItems().setAll(nuevosUsuarios);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static String requestUsuarios(int terminalId) throws Exception {
+        String urlString = "http://localhost:4000/api/terminal/" + terminalId + "/usuarios";
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "application/json");
+
+        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
+            throw new RuntimeException("Error HTTP: " + conn.getResponseCode());
+        }
+
+        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            response.append(line);
+        }
+        br.close();
+        conn.disconnect();
+        return response.toString();
+    }
 }

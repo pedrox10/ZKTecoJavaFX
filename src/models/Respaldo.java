@@ -13,7 +13,7 @@ public class Respaldo extends Model<Respaldo> {
     public Date fecha;
     public String nombre;
     public Terminal terminal;
-    public boolean fueSincronizado;
+    public Date fechaSincronizacion;
 
     public Date getFecha() {
         return fecha;
@@ -39,12 +39,12 @@ public class Respaldo extends Model<Respaldo> {
         this.terminal = terminal;
     }
 
-    public boolean isFueSincronizado() {
-        return fueSincronizado;
+    public Date getFechaSincronizacion() {
+        return fechaSincronizacion;
     }
 
-    public void setFueSincronizado(boolean fueSincronizado) {
-        this.fueSincronizado = fueSincronizado;
+    public void setFechaSincronizacion(Date fechaSincronizacion) {
+        this.fechaSincronizacion = fechaSincronizacion;
     }
 }
 

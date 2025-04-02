@@ -16,13 +16,11 @@ import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
-import javafx.scene.Parent;
 import javafx.scene.control.*;
-import javafx.scene.input.KeyCode;
-import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.*;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
+import models.Respaldo;
 import models.Terminal;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -33,7 +31,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.text.SimpleDateFormat;
-import java.util.Collections;
 import java.util.Date;
 import java.util.ResourceBundle;
 
@@ -127,7 +124,7 @@ public class TerminalController implements Initializable {
 
     @FXML
     private void generarBackup() throws IOException {
-        startLoading(root);
+        iniciarCarga(root);
     }
 
     @FXML
@@ -160,10 +157,10 @@ public class TerminalController implements Initializable {
         mc.pane_mascara.setVisible(true);
     }
 
-    private void startLoading(StackPane root) {
+    private void iniciarCarga(StackPane root) {
         ProgressIndicator progressIndicator = new ProgressIndicator();
         progressIndicator.setPrefSize(100, 100);
-        Label textoEspera = new Label("Generando respaldo ...");
+        Label textoEspera = new Label("Generando copia de respaldo ...");
         textoEspera.getStyleClass().add("texto-espera");
         VBox loadingPane = new VBox(progressIndicator, textoEspera);
         loadingPane.setSpacing(10);
@@ -190,11 +187,16 @@ public class TerminalController implements Initializable {
                     jsonObject.put("numero_serie", respuestaJson.getString("numero_serie"));
                     jsonObject.put("hora_terminal", respuestaJson.getString("hora_terminal"));
                     jsonObject.put("total_marcaciones", respuestaJson.getInt("total_marcaciones"));
-                    // Generar el archivo JSON con la fecha actual
-                    String fileName = "backup_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(new Date()) + ".json";
-                    try (FileWriter file = new FileWriter(fileName)) {
+                    Date fechaActual = new Date();
+                    String nombreArchivo = "backup_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaActual) + ".json";
+                    try (FileWriter file = new FileWriter(nombreArchivo)) {
                         file.write(jsonObject.toString(4)); // El parámetro '4' es para un JSON con indentación legible
-                        System.out.println("Archivo JSON generado: " + fileName);
+                        System.out.println("Archivo JSON generado: " + nombreArchivo);
+                        Respaldo respaldo = new Respaldo();
+                        respaldo.fecha = fechaActual;
+                        respaldo.nombre = nombreArchivo;
+                        respaldo.terminal = terminal;
+                        Platform.runLater(() -> respaldo.insert());
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
