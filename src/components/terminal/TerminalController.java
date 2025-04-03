@@ -2,6 +2,7 @@ package components.terminal;
 
 import app.Main;
 import components.toast.ToastController;
+import controllers.AgregarTerminalController;
 import controllers.ListarRespaldosController;
 import controllers.MainController;
 import javafx.application.Platform;
@@ -10,12 +11,14 @@ import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.concurrent.Task;
+import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
+import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Window;
@@ -37,23 +40,23 @@ import java.util.ResourceBundle;
 public class TerminalController implements Initializable {
 
     @FXML
-    private HBox hbCerrar;
+    private VBox hb_cerrar;
     @FXML
-    private Label lblCerrar;
+    private Label lbl_editar;
     @FXML
-    private VBox terminalPane;
+    private VBox terminal_pane;
     @FXML
-    private Label lblNombre;
+    private Label lbl_nombre;
     @FXML
-    private Label lblIP;
+    private Label lbl_ip;
     @FXML
-    private Label lblPuerto;
+    private Label lbl_puerto;
     @FXML
-    private Label lblUltSincronizacion;
+    private Label lbl_ult_sinc;
     @FXML
-    private Button btnRespaldo;
+    private Button btn_respaldo;
     @FXML
-    private Label lblUpload;
+    private Label lbl_upload;
     ObjectProperty<StackPane> op_root = new SimpleObjectProperty<StackPane>();
     StackPane root;
     Terminal terminal = null;
@@ -62,15 +65,15 @@ public class TerminalController implements Initializable {
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        terminalPane.getStylesheets().add(getClass().getResource("Terminal.css").toExternalForm());
-        lblNombre.getStyleClass().add("terminal-titulo");
-        lblIP.getStyleClass().add("subtitulo");
-        lblCerrar.setText("\ue5cd");
-        lblCerrar.setStyle("-fx-pref-width: 20; -fx-text-fill: #e67474");
-        hbCerrar.toFront();
-        lblUpload.setText("\ue2c3");
-        terminalPane.getStyleClass().add("terminal");
-        lblUltSincronizacion.getStyleClass().add("terminal-sync");
+        terminal_pane.getStylesheets().add(getClass().getResource("Terminal.css").toExternalForm());
+        lbl_nombre.getStyleClass().add("terminal-titulo");
+        lbl_ip.getStyleClass().add("subtitulo");
+        lbl_editar.setText("\ue3c9");
+        lbl_editar.setStyle("-fx-font-size: 18px");
+        hb_cerrar.toFront();
+        lbl_upload.setText("\ue2c3");
+        terminal_pane.getStyleClass().add("terminal");
+        lbl_ult_sinc.getStyleClass().add("terminal-sync");
 
         op_root.addListener(new ChangeListener<StackPane>() {
             @Override
@@ -94,15 +97,63 @@ public class TerminalController implements Initializable {
     public void setTerminalData(Terminal terminal, StackPane root, MainController mc) {
         this.mc = mc;
         this.terminal = terminal;
-        lblNombre.setText(terminal.getNombre());
-        lblIP.setText(terminal.getIp());
+        lbl_nombre.setText(terminal.getNombre());
+        lbl_ip.setText(terminal.getIp());
         if (terminal.getUltimoRespaldo() == null) {
-            lblUltSincronizacion.setText("Nunca");
+            lbl_ult_sinc.setText("Nunca");
         } else {
             SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY hh:mm");
-            lblUltSincronizacion.setText(sdf.format(terminal.getUltimoRespaldo().fecha));
+            lbl_ult_sinc.setText(sdf.format(terminal.getUltimoRespaldo().fecha));
         }
         op_root.setValue(root);
+    }
+
+    @FXML
+    private void editarTerminal() throws IOException{
+        Dialog dialogo = new Dialog();
+        dialogo.setTitle("Editar Terminal");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/AgregarTerminal.fxml"));
+        Parent terminalNode = loader.load();
+        //Obtener el controlador y pasarle los datos
+        AgregarTerminalController atc = loader.getController();
+        atc.initData(terminal);
+        AnchorPane root = (AnchorPane) loader.getRoot();
+        dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        dialogo.getDialogPane().setContent(root);
+        dialogo.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+        ButtonBar buttonBar = (ButtonBar) dialogo.getDialogPane().lookup(".button-bar");
+        if (buttonBar != null) {
+            buttonBar.setButtonOrder(ButtonBar.BUTTON_ORDER_LINUX); // "Cancelar" antes que "Aceptar"
+        }
+        dialogo.show();
+        mc.pane_mascara.setVisible(true);
+        mc.pane_mascara.toFront();
+
+        Button btn_ok = (Button) dialogo.getDialogPane().lookupButton(ButtonType.OK);
+        btn_ok.addEventFilter(ActionEvent.ACTION, (ae) -> {
+            String nombre = atc.tf_nombre.getText().trim();
+            String ip = atc.tf_ip.getText().trim();
+            String puerto = atc.tf_puerto.getText().trim();
+            String respuesta = mc.validarDatos(nombre, ip, puerto);
+            if( respuesta != "Correcto") {
+                ae.consume();
+                atc.hb_mensaje.setVisible(true);
+                atc.lbl_mensaje.setText(respuesta);
+            } else {
+                terminal.nombre = nombre;
+                terminal.ip = ip;
+                terminal.puerto = Integer.parseInt(puerto);
+                terminal.update();
+                //agregarTerminalUI(terminal);
+            }
+        });
+        dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
+            @Override
+            public void handle(DialogEvent event) {
+                mc.pane_mascara.toBack();
+                mc.pane_mascara.setVisible(false);
+            }
+        });
     }
 
     @FXML
@@ -115,7 +166,7 @@ public class TerminalController implements Initializable {
         if (conectado) {
             toast = ToastController.createToast("success", "Listo", "Terminal con conexión");
             toast.show(root);
-            btnRespaldo.setDisable(false);
+            btn_respaldo.setDisable(false);
         } else {
             toast = ToastController.createToast("error", "Error", "No se pudo conectar");
             toast.show(root);

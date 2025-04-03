@@ -112,6 +112,7 @@
 	-fx-background-radius: 4;
 	-fx-padding: 0.7em;
 	-fx-alignment: CENTER;
+	-fx-cursor: hand;
 }
 
 .button-raised .button .text, .button-flat .button .text {
@@ -623,7 +624,7 @@
 	-fx-padding: 0.5em 0.5em 0.5em 0.1em;
 	-fx-border-color: -swatch-grey;
 	-fx-border-width: 0 0 2 0;
-	-fx-prompt-text-fill: derive(-dark, 50%);
+	-fx-prompt-text-fill: lightgray;
 	-fx-highlight-fill: #5ecbea;
 }
 
@@ -754,10 +755,10 @@
 }
 
 .mensaje {
-	-fx-background-color: #FFCDD2;
+	-fx-background-color: #f4cdd1;
 	-fx-background-radius: 5;
 	-fx-padding: 8;
-	-fx-border-color: -swatch-dark-grey;
+	-fx-border-color: #f8aeb6;
 	-fx-border-width: 1;
 	-fx-border-radius: 5;
 }
@@ -780,6 +781,7 @@
 
 .dialog-pane > *.button-bar {
 	-fx-padding: 0;
+	-fx-background-color: #dddddd;
 }
 
 .dialog-pane > *.content {
@@ -804,3 +806,19 @@
 	-fx-fill: -fx-text-base-color; !* Color del texto dentro de celdas *!
 }
 */
+.circle {
+	-fx-background-color: #d13838; /* Color del círculo */
+	-fx-background-radius: 50%; /* Hace que sea un círculo */
+	align-content: center;
+	align-items: center;
+	-fx-alignment: center; /* Centra el contenido */
+	-fx-text-fill: white; /* Color del texto */
+}
+
+.circle .text {
+	align-self: center;
+}
+
+.hand {
+	-fx-cursor: hand;
+}

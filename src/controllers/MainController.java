@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.List;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 public class MainController implements Initializable {
 
@@ -80,13 +81,22 @@ public class MainController implements Initializable {
 
         Button btn_ok = (Button) dialogo.getDialogPane().lookupButton(ButtonType.OK);
         btn_ok.addEventFilter(ActionEvent.ACTION, (ae) -> {
-            System.out.println("OK");
-            Terminal terminal = new Terminal();
-            terminal.nombre = atc.tf_nombre.getText();
-            terminal.ip = atc.tf_ip.getText();
-            terminal.puerto = Integer.parseInt(atc.tf_puerto.getText());
-            terminal.insert();
-            agregarTerminalUI(terminal);
+            String nombre = atc.tf_nombre.getText().trim();
+            String ip = atc.tf_ip.getText().trim();
+            String puerto = atc.tf_puerto.getText().trim();
+            String respuesta = validarDatos(nombre, ip, puerto);
+            if( respuesta != "Correcto") {
+                ae.consume();
+                atc.hb_mensaje.setVisible(true);
+                atc.lbl_mensaje.setText(respuesta);
+            } else {
+                Terminal terminal = new Terminal();
+                terminal.nombre = nombre;
+                terminal.ip = ip;
+                terminal.puerto = Integer.parseInt(puerto);
+                terminal.insert();
+                agregarTerminalUI(terminal);
+            }
         });
         dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
             @Override
@@ -95,6 +105,23 @@ public class MainController implements Initializable {
                 pane_mascara.setVisible(false);
             }
         });
+    }
+
+    public String validarDatos(String nombre, String ip, String puertoStr) {
+        if (nombre.isEmpty()) {
+            return "El nombre no puede estar vacio";
+        }
+        if ( nombre.length() > 14) {
+            return "El nombre debe tener máximo 14 caracteres.";
+        }
+        String ipRegex = "^((25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)\\.){3}(25[0-5]|2[0-4][0-9]|[0-1]?[0-9][0-9]?)$";
+        if (!Pattern.matches(ipRegex, ip) || ip.isEmpty() ) {
+            return "IP no válida.";
+        }
+        if (!puertoStr.matches("\\d+") || puertoStr.isEmpty() ) {
+            return "El puerto debe ser un número";
+        }
+        return "Correcto";
     }
 
     public void agregarTerminalUI(Terminal terminal) {

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.geometry.Insets?>
@@ -8,33 +9,53 @@
 
 <StackPane fx:id="terminalStackPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="components.terminal.TerminalController">
    <children>
-       <VBox fx:id="terminalPane" alignment="CENTER" spacing="5" styleClass="card">
+       <VBox fx:id="terminal_pane" alignment="CENTER" spacing="5" styleClass="card">
            <children>
-               <Label fx:id="lblNombre" styleClass="card-title" text="Planta Baja" />
+               <Label fx:id="lbl_nombre" styleClass="card-title" text="Planta Baja" />
                <Separator />
-               <Label fx:id="lblIP" styleClass="card-subtitle" text="192.168.70.199" />
+            <HBox alignment="CENTER" spacing="5.0">
+               <children>
+                     <Label fx:id="lbl_ip" styleClass="card-subtitle" text="192.168.70.199" />
+               </children>
+            </HBox>
                <VBox alignment="CENTER" spacing="-15">
                    <children>
                        <Label styleClass="control-label" text="Ultimo Respaldo" />
-                       <Label fx:id="lblUltSincronizacion" styleClass="control-label" />
+                       <Label fx:id="lbl_ult_sinc" styleClass="control-label" />
                    </children>
                </VBox>
                <Button fx:id="btnConectar" onAction="#verificarConexion" styleClass="button-flat" text="Probar Conexión" />
             <HBox alignment="CENTER">
                <children>
-                     <Button fx:id="btnRespaldo" disable="true" onAction="#generarBackup" styleClass="button-flat" text="Generar Backup" />
-                  <Label fx:id="lblUpload" onMouseClicked="#verRespaldos" styleClass="icon" />
+                     <Button fx:id="btn_respaldo" disable="true" onAction="#generarBackup" styleClass="button-flat" text="Generar Backup" />
+                  <Label fx:id="lbl_upload" onMouseClicked="#verRespaldos">
+                     <styleClass>
+                        <String fx:value="icon" />
+                        <String fx:value="hand" />
+                     </styleClass></Label>
                </children>
             </HBox>
            </children>
        </VBox>
-       <HBox fx:id="hbCerrar" alignment="TOP_RIGHT" maxHeight="40.0" maxWidth="40.0" StackPane.alignment="TOP_RIGHT">
+       <VBox fx:id="hb_cerrar" alignment="TOP_CENTER" maxHeight="40.0" maxWidth="25.0" prefWidth="25.0" spacing="3.0" StackPane.alignment="TOP_RIGHT">
            <children>
-               <Label fx:id="lblCerrar" styleClass="icon" />
+               <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="16.0" maxWidth="16.0" prefHeight="16.0" prefWidth="16.0" text="x" textAlignment="CENTER">
+               <font>
+                  <Font size="11.0" />
+               </font>
+               <styleClass>
+                  <String fx:value="circle" />
+                  <String fx:value="hand" />
+               </styleClass></Label>
+            <Region minHeight="30.0" />
+            <Label fx:id="lbl_editar" onMouseClicked="#editarTerminal" alignment="CENTER" contentDisplay="CENTER" styleClass="hand" text="E" />
            </children>
          <StackPane.margin>
             <Insets />
          </StackPane.margin>
-       </HBox>
+         <padding>
+            <Insets top="5.0" />
+         </padding>
+       </VBox>
    </children>
 </StackPane>

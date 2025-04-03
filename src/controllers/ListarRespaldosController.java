@@ -59,6 +59,7 @@ public class ListarRespaldosController implements Initializable {
     public TableColumn tc_actuales_nombre;
     public TableColumn tc_actuales_ci;
     public Label ic_sync;
+    public Label ic_warning;
 
     ObservableList<Respaldo> respaldos = FXCollections.observableArrayList();
     ObjectProperty<Respaldo> opRespaldo = new SimpleObjectProperty<>();
@@ -137,11 +138,11 @@ public class ListarRespaldosController implements Initializable {
             }
         });
         ic_fecha.setText("\ue916");
-        ic_fecha.setStyle("-fx-text-fill: #44c0aa");
+        ic_fecha.setStyle("-fx-text-fill: #2fa58f");
         ic_archivo.setText("\ue24d");
-        ic_archivo.setStyle("-fx-text-fill: #8969e1");
+        ic_archivo.setStyle("-fx-text-fill: #a295c3");
         ic_sincronizado.setText("\ue915");
-        ic_sincronizado.setStyle("-fx-text-fill: #e84b4b");
+        ic_sincronizado.setStyle("-fx-text-fill: #ec3939");
         btn_siguiente.disableProperty().bind(opRespaldo.isNull());
 
         tc_nuevos_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
@@ -149,7 +150,9 @@ public class ListarRespaldosController implements Initializable {
         tc_actuales_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         tc_actuales_ci.setCellValueFactory(new PropertyValueFactory<>("ci"));
         ic_sync.setText("\ue915");
-        ic_sync.setStyle("-fx-text-fill: #e84b4b");
+        ic_sync.setStyle("-fx-text-fill: #ec3939");
+        ic_warning.setText("\ue88e");
+        ic_warning.setStyle("-fx-font-size: 30px");
     }
 
     public void initData(Terminal terminal, MainController mc) {
