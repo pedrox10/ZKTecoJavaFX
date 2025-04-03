@@ -6,6 +6,7 @@ import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -53,6 +54,10 @@ public class ListarRespaldosController implements Initializable {
 
     public TableView tv_nuevos;
     public TableColumn tc_nuevos_nombre;
+    public TableColumn tc_nuevos_ci;
+    public TableView tv_actuales;
+    public TableColumn tc_actuales_nombre;
+    public TableColumn tc_actuales_ci;
     public Label ic_sync;
 
     ObservableList<Respaldo> respaldos = FXCollections.observableArrayList();
@@ -132,14 +137,17 @@ public class ListarRespaldosController implements Initializable {
             }
         });
         ic_fecha.setText("\ue916");
-        ic_fecha.setStyle("-fx-text-fill: #7553d3");
+        ic_fecha.setStyle("-fx-text-fill: #44c0aa");
         ic_archivo.setText("\ue24d");
-        ic_archivo.setStyle("-fx-text-fill: #64ddc7");
+        ic_archivo.setStyle("-fx-text-fill: #8969e1");
         ic_sincronizado.setText("\ue915");
         ic_sincronizado.setStyle("-fx-text-fill: #e84b4b");
         btn_siguiente.disableProperty().bind(opRespaldo.isNull());
 
         tc_nuevos_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        tc_nuevos_ci.setCellValueFactory(new PropertyValueFactory<>("ci"));
+        tc_actuales_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        tc_actuales_ci.setCellValueFactory(new PropertyValueFactory<>("ci"));
         ic_sync.setText("\ue915");
         ic_sync.setStyle("-fx-text-fill: #e84b4b");
     }
@@ -165,11 +173,11 @@ public class ListarRespaldosController implements Initializable {
     public void irSiguiente(ActionEvent event) {
         vb_primer_paso.setVisible(false);
         vb_segundo_paso.setVisible(true);
-        System.out.println(respaldoActual.nombre);
         File file = new File(respaldoActual.nombre);
         cargarBackup(file);
         try {
-            System.out.println(requestUsuarios(1));
+            Task<JSONArray> task = getUsuariosTask(1);
+            new Thread(task).start();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -207,17 +215,45 @@ public class ListarRespaldosController implements Initializable {
         }
     }
 
+    // Método que crea un Task para ejecutar la solicitud sin bloquear la UI
+    public Task<JSONArray> getUsuariosTask(int terminalId) {
+        return new Task<JSONArray>() {
+            @Override
+            protected JSONArray call() throws Exception {
+                String jsonResponse = requestUsuarios(terminalId);
+                return new JSONArray(jsonResponse);
+            }
+            @Override
+            protected void succeeded() {
+                super.succeeded();
+                JSONArray usuarios = getValue();
+                List<Usuario> usuariosActuales = new ArrayList<>();
+                for (int i = 0; i < usuarios.length(); i++) {
+                    JSONObject u = usuarios.getJSONObject(i);
+                    int id = u.getInt("ci");
+                    String nombre = u.getString("nombre");
+                    usuariosActuales.add(new Usuario(id, nombre));
+                }
+                tv_actuales.getItems().setAll(usuariosActuales);
+            }
+            @Override
+            protected void failed() {
+                super.failed();
+                Throwable error = getException();
+                error.printStackTrace();
+            }
+        };
+    }
+
     public static String requestUsuarios(int terminalId) throws Exception {
         String urlString = "http://localhost:4000/api/terminal/" + terminalId + "/usuarios";
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
         conn.setRequestProperty("Accept", "application/json");
-
         if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
             throw new RuntimeException("Error HTTP: " + conn.getResponseCode());
         }
-
         BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
         StringBuilder response = new StringBuilder();
         String line;
