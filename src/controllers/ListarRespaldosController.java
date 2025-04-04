@@ -29,6 +29,7 @@ import java.io.FileReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -176,7 +177,10 @@ public class ListarRespaldosController implements Initializable {
     public void irSiguiente(ActionEvent event) {
         vb_primer_paso.setVisible(false);
         vb_segundo_paso.setVisible(true);
-        File file = new File(respaldoActual.nombre);
+        String basePath = Paths.get("").toAbsolutePath().toString();
+        String relativePath = "Backups";
+        String fullPathToDelete = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
+        File file = new File(fullPathToDelete);
         cargarBackup(file);
         try {
             Task<JSONArray> task = getUsuariosTask(1);

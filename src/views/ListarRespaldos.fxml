@@ -72,7 +72,7 @@
                         <VBox alignment="CENTER">
                            <children>
                               <Label text="Contenido Nuevo" />
-                              <Label style="-fx-padding: 0 0 0 0;" styleClass="control-label" text="124 funcionarios" />
+                              <Label fx:id="lbl_num_nuevos" style="-fx-padding: 0 0 0 0;" styleClass="control-label" text="124 funcionarios" />
                            </children>
                            <padding>
                               <Insets left="10.0" right="10.0" />
@@ -81,8 +81,8 @@
                         <Region HBox.hgrow="ALWAYS" />
                         <VBox alignment="CENTER">
                            <children>
-                              <Label style="-fx-padding: 0 0 0 0;" styleClass="card-subtitle" text="Planta Baja" />
-                              <Label style="-fx-padding: 0 0 0 0;" styleClass="control-label" text="192.168.70.199" />
+                              <Label fx:id="lbl_term_nombre" style="-fx-padding: 0 0 0 0;" styleClass="card-subtitle" text="Planta Baja" />
+                              <Label fx:id="lbl_term_ip" style="-fx-padding: 0 0 0 0;" styleClass="control-label" text="192.168.70.199" />
                               <Label fx:id="ic_sync" alignment="CENTER" style="-fx-label-padding: 0 0 0 0;" styleClass="icon" text="-&gt;" />
                            </children>
                         </VBox>
@@ -90,7 +90,7 @@
                         <VBox alignment="CENTER">
                            <children>
                               <Label text="Contenido Actual" />
-                              <Label style="-fx-padding: 0;" styleClass="control-label" text="122 funcionarios" />
+                              <Label fx:id="lbl_num_actuales" style="-fx-padding: 0;" styleClass="control-label" text="122 funcionarios" />
                            </children>
                            <padding>
                               <Insets left="10.0" right="10.0" />

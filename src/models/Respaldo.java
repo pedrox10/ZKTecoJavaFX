@@ -2,6 +2,7 @@ package models;
 
 import org.orman.mapper.Model;
 import org.orman.mapper.annotation.Entity;
+import org.orman.mapper.annotation.ManyToOne;
 import org.orman.mapper.annotation.PrimaryKey;
 
 import java.util.Date;
@@ -12,6 +13,7 @@ public class Respaldo extends Model<Respaldo> {
     public int id;
     public Date fecha;
     public String nombre;
+    @ManyToOne
     public Terminal terminal;
     public Date fechaSincronizacion;
 

@@ -28,23 +28,22 @@ import models.Terminal;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.BufferedReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
+import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class TerminalController implements Initializable {
 
     @FXML
-    private VBox hb_cerrar;
+    private VBox vb_cerrar;
     @FXML
     private Label lbl_editar;
     @FXML
-    private VBox terminal_pane;
+    private VBox vb_cabecera;
     @FXML
     private Label lbl_nombre;
     @FXML
@@ -65,14 +64,14 @@ public class TerminalController implements Initializable {
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        terminal_pane.getStylesheets().add(getClass().getResource("Terminal.css").toExternalForm());
+        vb_cabecera.getStylesheets().add(getClass().getResource("Terminal.css").toExternalForm());
         lbl_nombre.getStyleClass().add("terminal-titulo");
         lbl_ip.getStyleClass().add("subtitulo");
         lbl_editar.setText("\ue3c9");
         lbl_editar.setStyle("-fx-font-size: 18px");
-        hb_cerrar.toFront();
+        vb_cerrar.toFront();
         lbl_upload.setText("\ue2c3");
-        terminal_pane.getStyleClass().add("terminal");
+        vb_cabecera.getStyleClass().add("terminal");
         lbl_ult_sinc.getStyleClass().add("terminal-sync");
 
         op_root.addListener(new ChangeListener<StackPane>() {
@@ -144,7 +143,7 @@ public class TerminalController implements Initializable {
                 terminal.ip = ip;
                 terminal.puerto = Integer.parseInt(puerto);
                 terminal.update();
-                //agregarTerminalUI(terminal);
+                mc.editarTerminalUI(terminal);
             }
         });
         dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
@@ -154,6 +153,29 @@ public class TerminalController implements Initializable {
                 mc.pane_mascara.setVisible(false);
             }
         });
+    }
+
+    @FXML
+    public void eliminarTerminal() {
+        Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+        alert.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        alert.setTitle("Confirmar eliminación");
+        alert.setHeaderText("Eliminar");
+        alert.setContentText("¿Estás seguro de que deseas eliminar este terminal?");
+        Label contenido = new Label("¿Estás seguro de que deseas eliminar este terminal?");
+        contenido.setStyle("-fx-font-size: 14px; -fx-padding: 25 15 25 15;");
+        alert.getDialogPane().setContent(contenido);
+        mc.pane_mascara.setVisible(true);
+        mc.pane_mascara.toFront();
+        Optional<ButtonType> resultado = alert.showAndWait();
+        if (resultado.isPresent() && resultado.get() == ButtonType.OK) {
+            mc.eliminarTerminalUI(terminal);
+            mc.pane_mascara.toBack();
+            mc.pane_mascara.setVisible(false);
+        } else {
+            mc.pane_mascara.toBack();
+            mc.pane_mascara.setVisible(false);
+        }
     }
 
     @FXML
@@ -239,13 +261,20 @@ public class TerminalController implements Initializable {
                     jsonObject.put("hora_terminal", respuestaJson.getString("hora_terminal"));
                     jsonObject.put("total_marcaciones", respuestaJson.getInt("total_marcaciones"));
                     Date fechaActual = new Date();
-                    String nombreArchivo = "backup_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaActual) + ".json";
-                    try (FileWriter file = new FileWriter(nombreArchivo)) {
-                        file.write(jsonObject.toString(4)); // El parámetro '4' es para un JSON con indentación legible
-                        System.out.println("Archivo JSON generado: " + nombreArchivo);
+                    String nombreArchivo = "Backup_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaActual) + ".json";
+                    String basePath = Paths.get("").toAbsolutePath().toString();
+                    String relativePath = "Backups";
+                    String fullPath = basePath + File.separator + relativePath + File.separator + nombreArchivo;
+                    File backupFolder = new File(basePath, relativePath);
+                    if (!backupFolder.exists()) {
+                        backupFolder.mkdirs();
+                    }
+                    try (FileWriter file = new FileWriter(fullPath)) {
+                        file.write(jsonObject.toString(4)); // JSON con indentación
+                        System.out.println("Archivo JSON generado en: " + fullPath);
                         Respaldo respaldo = new Respaldo();
                         respaldo.fecha = fechaActual;
-                        respaldo.nombre = nombreArchivo;
+                        respaldo.nombre = nombreArchivo;  // Guardar solo el nombre del archivo
                         respaldo.terminal = terminal;
                         Platform.runLater(() -> respaldo.insert());
                     }
@@ -254,7 +283,6 @@ public class TerminalController implements Initializable {
                 }
                 return null;
             }
-
             @Override
             protected void succeeded() {
                 Platform.runLater(() -> {
@@ -266,7 +294,6 @@ public class TerminalController implements Initializable {
         };
         new Thread(task).start();
     }
-
 
     public static String ejecutarScriptPython(String scriptPath, String ip, String puerto) throws IOException {
         // Construir el comando

@@ -9,15 +9,11 @@
 
 <StackPane fx:id="terminalStackPane" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="components.terminal.TerminalController">
    <children>
-       <VBox fx:id="terminal_pane" alignment="CENTER" spacing="5" styleClass="card">
+       <VBox fx:id="vb_cabecera" alignment="CENTER" spacing="5" styleClass="card">
            <children>
                <Label fx:id="lbl_nombre" styleClass="card-title" text="Planta Baja" />
                <Separator />
-            <HBox alignment="CENTER" spacing="5.0">
-               <children>
-                     <Label fx:id="lbl_ip" styleClass="card-subtitle" text="192.168.70.199" />
-               </children>
-            </HBox>
+               <Label fx:id="lbl_ip" styleClass="card-subtitle" text="192.168.70.199" />
                <VBox alignment="CENTER" spacing="-15">
                    <children>
                        <Label styleClass="control-label" text="Ultimo Respaldo" />
@@ -37,9 +33,9 @@
             </HBox>
            </children>
        </VBox>
-       <VBox fx:id="hb_cerrar" alignment="TOP_CENTER" maxHeight="40.0" maxWidth="25.0" prefWidth="25.0" spacing="3.0" StackPane.alignment="TOP_RIGHT">
+       <VBox fx:id="vb_cerrar" alignment="TOP_CENTER" maxHeight="40.0" maxWidth="25.0" prefWidth="25.0" spacing="3.0" StackPane.alignment="TOP_RIGHT">
            <children>
-               <Label alignment="CENTER" contentDisplay="CENTER" maxHeight="16.0" maxWidth="16.0" prefHeight="16.0" prefWidth="16.0" text="x" textAlignment="CENTER">
+               <Label fx:id="lbl_cerrar" alignment="CENTER" contentDisplay="CENTER" maxHeight="16.0" maxWidth="16.0" onMouseClicked="#eliminarTerminal" prefHeight="16.0" prefWidth="16.0" text="x" textAlignment="CENTER">
                <font>
                   <Font size="11.0" />
                </font>
@@ -48,7 +44,7 @@
                   <String fx:value="hand" />
                </styleClass></Label>
             <Region minHeight="30.0" />
-            <Label fx:id="lbl_editar" onMouseClicked="#editarTerminal" alignment="CENTER" contentDisplay="CENTER" styleClass="hand" text="E" />
+            <Label fx:id="lbl_editar" alignment="CENTER" contentDisplay="CENTER" onMouseClicked="#editarTerminal" styleClass="hand" text="E" />
            </children>
          <StackPane.margin>
             <Insets />

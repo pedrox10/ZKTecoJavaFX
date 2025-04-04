@@ -88,7 +88,6 @@ public class EntityList<D, E extends Model<E>> implements List<E> {
 		if (syntheticRelation != null){
 			// ManyToMany exists.
 			List<Field> synthFields = syntheticRelation.getFields();
-			
 			Field queryField = null; // guaranteed to be filled.
 			for(Field sF : synthFields){
 				if (sF.getClazz().equals(holderType)){
@@ -96,7 +95,6 @@ public class EntityList<D, E extends Model<E>> implements List<E> {
 					break;
 				}
 			}
-			
 			ModelQuery subq = ModelQuery.select().from(syntheticRelation);
 			subq = subq.selectColumn(
 					syntheticRelation,
@@ -106,7 +104,6 @@ public class EntityList<D, E extends Model<E>> implements List<E> {
 			subq = subq.where(C.eq(syntheticRelation,
 				queryField.getOriginalName(),
 				holderInstance));
-			
 			mq = mq.from(targetType);
 			mq = mq.where(C.in(targetType, targetEntity.getAutoIncrementField().getOriginalName(), subq.getQuery()));
 		} else {
@@ -117,7 +114,6 @@ public class EntityList<D, E extends Model<E>> implements List<E> {
 					holderInstance));
 		}
 		Query q = mq.getQuery();
-		
 		elements = Model.fetchQuery(q, targetType);
 		Log.trace("Fetched %d target entities to EntityList.", elements.size());
 	}

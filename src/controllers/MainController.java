@@ -17,10 +17,15 @@ import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.scene.Parent;
+import models.Respaldo;
 import models.Terminal;
 import org.orman.mapper.Model;
+
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
@@ -137,14 +142,75 @@ public class MainController implements Initializable {
         }
     }
 
-    public void eliminarTerminalUI(Terminal terminal) {
+    public void editarTerminalUI(Terminal terminal) {
         for (Node n : fp_terminales.getChildren()) {
-            VBox vbox = (VBox) n;
-            Terminal t = (Terminal) vbox.getUserData();
+            StackPane stackPane = (StackPane) n; // Se asume que cada terminal es un StackPane
+            Terminal t = (Terminal) stackPane.getUserData();
+            System.out.println(t);
             if (t.id == terminal.id) {
-                fp_terminales.getChildren().remove(vbox);
+                // Buscar el VBox con id "id_cabecera" dentro del StackPane
+                for (Node child : stackPane.getChildren()) {
+                    if (child instanceof VBox) {
+                        VBox vboxCabecera = (VBox) child;
+                        if ("vb_cabecera".equals(vboxCabecera.getId())) {
+                            // Buscar y actualizar los Labels dentro del VBox
+                            for (Node vboxChild : vboxCabecera.getChildren()) {
+                                if (vboxChild instanceof Label) {
+                                    Label label = (Label) vboxChild;
+                                    String id = label.getId();
+                                    if (id != null) { // Evitar NullPointerException
+                                        switch (id) {
+                                            case "lbl_nombre":
+                                                label.setText(terminal.nombre);
+                                                break;
+                                            case "lbl_ip":
+                                                label.setText(terminal.ip);
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                            break;
+                        }
+                    }
+                }
+                stackPane.setUserData(terminal);
                 break;
             }
         }
+    }
+
+    public void eliminarTerminalUI(Terminal terminal) {
+        for (Node n : fp_terminales.getChildren()) {
+            StackPane sp_raiz = (StackPane) n;
+            Terminal t = (Terminal) sp_raiz.getUserData();
+            if (t.id == terminal.id) {
+                fp_terminales.getChildren().remove(sp_raiz);
+                break;
+            }
+        }
+
+        String basePath = Paths.get("").toAbsolutePath().toString();
+        String relativePath = "Backups";
+        terminal.respaldos.refreshList();
+        for (Respaldo respaldo : terminal.respaldos) {
+            String fullPathToDelete = basePath + File.separator + relativePath + File.separator + respaldo.nombre;
+            System.out.println(fullPathToDelete);
+            File file = new File(fullPathToDelete);
+            System.out.println(file.getAbsolutePath());
+            try {
+                if (file.exists()) {
+                    System.out.println("existe");
+                    Files.delete(file.toPath());
+                } else {
+                    System.out.println("No existe: " + file.getAbsolutePath());
+                }
+            } catch (IOException e) {
+                System.out.println("Error al eliminar: " + file.getAbsolutePath());
+                e.printStackTrace();
+            }
+            respaldo.delete();
+        }
+        terminal.delete();
     }
 }
