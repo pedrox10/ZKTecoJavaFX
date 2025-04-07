@@ -68,7 +68,7 @@ public class TerminalController implements Initializable {
         lbl_nombre.getStyleClass().add("terminal-titulo");
         lbl_ip.getStyleClass().add("subtitulo");
         lbl_editar.setText("\ue3c9");
-        lbl_editar.setStyle("-fx-font-size: 18px");
+        //lbl_editar.setStyle("-fx-font-size: 18px");
         vb_cerrar.toFront();
         lbl_upload.setText("\ue2c3");
         vb_cabecera.getStyleClass().add("terminal");

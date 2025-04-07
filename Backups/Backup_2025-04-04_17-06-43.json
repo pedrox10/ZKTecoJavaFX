@@ -103254,6 +103254,14 @@
             "group_id": "",
             "name": "ARIEL COA",
             "privilege": 0
+        },
+        {
+            "uid": 156,
+            "password": "",
+            "user_id": "7876911",
+            "group_id": "",
+            "name": "PRUEBA",
+            "privilege": 0
         }
     ],
     "hora_terminal": "2025-04-04T17:07:05",

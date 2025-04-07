@@ -1,5 +1,6 @@
 package controllers;
 
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -23,10 +24,7 @@ import org.orman.mapper.Model;
 import org.orman.mapper.ModelQuery;
 import org.orman.sql.C;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Paths;
@@ -61,6 +59,8 @@ public class ListarRespaldosController implements Initializable {
     public TableColumn tc_actuales_ci;
     public Label ic_sync;
     public Label ic_warning;
+    public CheckBox cb_confirmacion;
+    public Button btn_sincronizar;
 
     ObservableList<Respaldo> respaldos = FXCollections.observableArrayList();
     ObjectProperty<Respaldo> opRespaldo = new SimpleObjectProperty<>();
@@ -153,7 +153,8 @@ public class ListarRespaldosController implements Initializable {
         ic_sync.setText("\ue915");
         ic_sync.setStyle("-fx-text-fill: #ec3939");
         ic_warning.setText("\ue88e");
-        ic_warning.setStyle("-fx-font-size: 30px");
+        btn_sincronizar.disableProperty().bind(cb_confirmacion.selectedProperty().not());
+        //ic_warning.setStyle("-fx-font-size: 30px");
     }
 
     public void initData(Terminal terminal, MainController mc) {
@@ -175,23 +176,25 @@ public class ListarRespaldosController implements Initializable {
 
     @FXML
     public void irSiguiente(ActionEvent event) {
-        vb_primer_paso.setVisible(false);
-        vb_segundo_paso.setVisible(true);
-        String basePath = Paths.get("").toAbsolutePath().toString();
-        String relativePath = "Backups";
-        String fullPathToDelete = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
-        File file = new File(fullPathToDelete);
-        cargarBackup(file);
         try {
-            Task<JSONArray> task = getUsuariosTask(1);
+            System.out.println(terminal.ip);
+            Task<JSONArray> task = getTerminalTask(terminal.ip);
             new Thread(task).start();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+        vb_primer_paso.setVisible(false);
+        vb_segundo_paso.setVisible(true);
+        String basePath = Paths.get("").toAbsolutePath().toString();
+        String relativePath = "Backups";
+        String fullPath = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
+        File file = new File(fullPath);
+        cargarBackup(file);
     }
 
     @FXML
     public void irAtras(ActionEvent event) {
+        cb_confirmacion.setSelected(false);
         vb_primer_paso.setVisible(true);
         vb_segundo_paso.setVisible(false);
     }
@@ -213,7 +216,7 @@ public class ListarRespaldosController implements Initializable {
                 JSONObject u = usuariosArray.getJSONObject(i);
                 int id = u.getInt("user_id");
                 String nombre = u.getString("name");
-                System.out.println(id + " " + nombre);
+                //System.out.println(id + " " + nombre);
                 nuevosUsuarios.add(new Usuario(id, nombre));
             }
             tv_nuevos.getItems().setAll(nuevosUsuarios);
@@ -223,37 +226,42 @@ public class ListarRespaldosController implements Initializable {
     }
 
     // Método que crea un Task para ejecutar la solicitud sin bloquear la UI
-    public Task<JSONArray> getUsuariosTask(int terminalId) {
+    public Task<JSONArray> getTerminalTask(String terminalIp) {
         return new Task<JSONArray>() {
             @Override
             protected JSONArray call() throws Exception {
-                String jsonResponse = requestUsuarios(terminalId);
-                return new JSONArray(jsonResponse);
+                String res = requestTerminal(terminalIp);
+                System.out.println(res);
+                JSONObject json = new JSONObject(res);
+                JSONObject terminal = json.getJSONO("terminal");
+                return terminal;
             }
             @Override
             protected void succeeded() {
                 super.succeeded();
-                JSONArray usuarios = getValue();
-                List<Usuario> usuariosActuales = new ArrayList<>();
+                JSONArray terminal = getValue();
+                //System.out.println(terminal);
+                /*List<Usuario> usuariosActuales = new ArrayList<>();
                 for (int i = 0; i < usuarios.length(); i++) {
                     JSONObject u = usuarios.getJSONObject(i);
                     int id = u.getInt("ci");
                     String nombre = u.getString("nombre");
                     usuariosActuales.add(new Usuario(id, nombre));
                 }
-                tv_actuales.getItems().setAll(usuariosActuales);
+                tv_actuales.getItems().setAll(usuariosActuales);*/
             }
             @Override
             protected void failed() {
                 super.failed();
+                //System.out.println(terminal);
                 Throwable error = getException();
                 error.printStackTrace();
             }
         };
     }
 
-    public static String requestUsuarios(int terminalId) throws Exception {
-        String urlString = "http://localhost:4000/api/terminal/" + terminalId + "/usuarios";
+    public static String requestTerminal(String terminalIp) throws Exception {
+        String urlString = "http://localhost:4000/api/terminal/ip/" + terminalIp;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -269,6 +277,42 @@ public class ListarRespaldosController implements Initializable {
         }
         br.close();
         conn.disconnect();
+        //System.out.println(response.toString());
         return response.toString();
+    }
+
+    public String obtenerTerminalPorIp(String ip) throws IOException {
+        String urlString = "http://localhost:4000/api/terminal/" + ip;
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod("GET");
+        conn.setRequestProperty("Accept", "application/json");
+        int status = conn.getResponseCode();
+        InputStream is = (status == 200) ? conn.getInputStream() : conn.getErrorStream();
+        BufferedReader br = new BufferedReader(new InputStreamReader(is));
+        StringBuilder response = new StringBuilder();
+        String line;
+        while ((line = br.readLine()) != null) {
+            response.append(line);
+        }
+        br.close();
+        conn.disconnect();
+        String jsonResponse = response.toString();
+        Platform.runLater(() -> {
+            switch (status) {
+                case 200:
+                    //mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Terminal y usuarios cargados.");
+                    break;
+                case 404:
+                    //mostrarAlerta(Alert.AlertType.WARNING, "No encontrado", "El terminal con esa IP no existe.");
+                    break;
+                case 500:
+                    //mostrarAlerta(Alert.AlertType.ERROR, "Error del servidor", "Hubo un error al procesar la solicitud.");
+                    break;
+                default:
+                    //mostrarAlerta(Alert.AlertType.ERROR, "Error", "Código inesperado: " + status);
+            }
+        });
+        return jsonResponse;
     }
 }
