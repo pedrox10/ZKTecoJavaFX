@@ -285,8 +285,8 @@
 }
 
 .check-box:selected > .box {
-	-fx-border-color: -swatch-500;
-	-fx-background-color: -swatch-500;
+	-fx-border-color: -swatch-200;
+	-fx-background-color: -swatch-200;
 }
 
 .check-box:focused > .box {

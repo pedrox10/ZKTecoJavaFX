@@ -1,6 +1,6 @@
 package controllers;
 
-import javafx.application.Platform;
+import components.toast.ToastController;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -31,6 +31,7 @@ import java.nio.file.Paths;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,6 +47,8 @@ public class ListarRespaldosController implements Initializable {
     public TableColumn tc_fecha;
     public TableColumn tc_nombre;
     public TableColumn tc_fecha_sincronizacion;
+    public Label lbl_pri_nombre;
+    public Label lbl_pri_ip;
     public Label ic_fecha;
     public Label ic_archivo;
     public Label ic_sincronizado;
@@ -57,6 +60,13 @@ public class ListarRespaldosController implements Initializable {
     public TableView tv_actuales;
     public TableColumn tc_actuales_nombre;
     public TableColumn tc_actuales_ci;
+    public Label lbl_seg_nombre;
+    public Label lbl_seg_ip;
+    public Label lbl_fecha_respaldo;
+    public Label lbl_ult_sinc;
+    public Label lbl_num_nuevos;
+    public Label lbl_num_actuales;
+    public Label lbl_nuevas_marcaciones;
     public Label ic_sync;
     public Label ic_warning;
     public CheckBox cb_confirmacion;
@@ -67,13 +77,13 @@ public class ListarRespaldosController implements Initializable {
     Terminal terminal = null;
     MainController mc = null;
     Respaldo respaldoActual = null;
+    private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @Override
     public void initialize(URL event, ResourceBundle rb) {
         tc_fecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
         tc_fecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
         tc_fecha.setCellFactory(column -> new TableCell<Respaldo, Date>() {
-            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
             @Override
             protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
@@ -93,6 +103,7 @@ public class ListarRespaldosController implements Initializable {
         tc_fecha_sincronizacion.setCellValueFactory(new PropertyValueFactory<>("fechaSincronizacion"));
         tc_fecha_sincronizacion.setCellFactory(column -> new TableCell<Respaldo, Date>() {
             private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+
             @Override
             protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
@@ -127,7 +138,7 @@ public class ListarRespaldosController implements Initializable {
         tv_respaldos.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Respaldo>() {
             @Override
             public void changed(ObservableValue<? extends Respaldo> observable, Respaldo oldValue, Respaldo newValue) {
-                if(newValue != null) {
+                if (newValue != null) {
                     opRespaldo.setValue(newValue);
                 }
             }
@@ -164,6 +175,8 @@ public class ListarRespaldosController implements Initializable {
                 from(Respaldo.class).where(C.eq("terminal", terminal.id)).
                 getQuery(), Respaldo.class));
         tv_respaldos.setItems(respaldos);
+        lbl_pri_nombre.setText(terminal.nombre);
+        lbl_pri_ip.setText(terminal.ip);
     }
 
     @FXML
@@ -177,19 +190,57 @@ public class ListarRespaldosController implements Initializable {
     @FXML
     public void irSiguiente(ActionEvent event) {
         try {
-            System.out.println(terminal.ip);
-            Task<JSONArray> task = getTerminalTask(terminal.ip);
-            new Thread(task).start();
+            String res = requestTerminalPorIp(terminal.ip);
+            JSONObject jsonObject = new JSONObject(res);
+            boolean exito = jsonObject.getBoolean("exito");
+            if (exito) {
+                lbl_seg_nombre.setText(terminal.nombre);
+                lbl_seg_ip.setText(terminal.ip);
+                lbl_fecha_respaldo.setText(formatter.format(convertir(respaldoActual.fecha)));
+
+                JSONObject resObj = jsonObject.getJSONObject("respuesta");
+                ZonedDateTime zonedUtc = ZonedDateTime.parse(resObj.getString("ultSincronizacion"));
+                ZonedDateTime zonedLaPaz = zonedUtc.withZoneSameInstant(ZoneId.of("America/La_Paz"));
+                LocalDateTime ult_sinc = zonedLaPaz.toLocalDateTime();
+                JSONArray usuariosJSON = resObj.getJSONArray("usuarios");
+                List<Usuario> usuariosActuales = new ArrayList<>();
+                for (int i = 0; i < usuariosJSON.length(); i++) {
+                    JSONObject u = usuariosJSON.getJSONObject(i);
+                    int id = u.getInt("ci");
+                    String nombre = u.getString("nombre");
+                    usuariosActuales.add(new Usuario(id, nombre));
+                }
+                tv_actuales.getItems().setAll(usuariosActuales);
+                lbl_num_actuales.setText(usuariosActuales.size() + " funcionarios");
+                lbl_ult_sinc.setText(formatter.format(ult_sinc));
+                vb_primer_paso.setVisible(false);
+                vb_segundo_paso.setVisible(true);
+                String basePath = Paths.get("").toAbsolutePath().toString();
+                String relativePath = "Backups";
+                String fullPath = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
+                File file = new File(fullPath);
+                cargarBackup(file);
+            } else {
+                mostrarError(jsonObject.getString("respuesta"));
+            }
+        } catch (java.net.ConnectException ce) {
+            System.err.println("No se pudo conectar con el servidor");
+            mostrarError("No se pudo conectar con el servidor");
+        } catch (java.net.SocketTimeoutException ste) {
+            System.err.println("Tiempo de espera agotado al intentar conectar con el servidor.");
+            mostrarError("No se pudo conectar con el servidor");
+        } catch (IOException ioe) {
+            System.err.println("Error de entrada/salida: " + ioe.getMessage());
+            mostrarError("Error I/O");
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            System.err.println("Error inesperado: " + e.getMessage());
+            mostrarError("¡Error inesperado!");
         }
-        vb_primer_paso.setVisible(false);
-        vb_segundo_paso.setVisible(true);
-        String basePath = Paths.get("").toAbsolutePath().toString();
-        String relativePath = "Backups";
-        String fullPath = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
-        File file = new File(fullPath);
-        cargarBackup(file);
+    }
+
+    public void mostrarError(String error) {
+        ToastController toast = ToastController.createToast("error", "¡Error!", error);
+        toast.show(mc.root);
     }
 
     @FXML
@@ -216,73 +267,17 @@ public class ListarRespaldosController implements Initializable {
                 JSONObject u = usuariosArray.getJSONObject(i);
                 int id = u.getInt("user_id");
                 String nombre = u.getString("name");
-                //System.out.println(id + " " + nombre);
                 nuevosUsuarios.add(new Usuario(id, nombre));
             }
             tv_nuevos.getItems().setAll(nuevosUsuarios);
+            lbl_num_nuevos.setText(nuevosUsuarios.size() + " funcionarios");
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    // Método que crea un Task para ejecutar la solicitud sin bloquear la UI
-    public Task<JSONArray> getTerminalTask(String terminalIp) {
-        return new Task<JSONArray>() {
-            @Override
-            protected JSONArray call() throws Exception {
-                String res = requestTerminal(terminalIp);
-                System.out.println(res);
-                JSONObject json = new JSONObject(res);
-                JSONObject terminal = json.getJSONO("terminal");
-                return terminal;
-            }
-            @Override
-            protected void succeeded() {
-                super.succeeded();
-                JSONArray terminal = getValue();
-                //System.out.println(terminal);
-                /*List<Usuario> usuariosActuales = new ArrayList<>();
-                for (int i = 0; i < usuarios.length(); i++) {
-                    JSONObject u = usuarios.getJSONObject(i);
-                    int id = u.getInt("ci");
-                    String nombre = u.getString("nombre");
-                    usuariosActuales.add(new Usuario(id, nombre));
-                }
-                tv_actuales.getItems().setAll(usuariosActuales);*/
-            }
-            @Override
-            protected void failed() {
-                super.failed();
-                //System.out.println(terminal);
-                Throwable error = getException();
-                error.printStackTrace();
-            }
-        };
-    }
-
-    public static String requestTerminal(String terminalIp) throws Exception {
-        String urlString = "http://localhost:4000/api/terminal/ip/" + terminalIp;
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Accept", "application/json");
-        if (conn.getResponseCode() != HttpURLConnection.HTTP_OK) {
-            throw new RuntimeException("Error HTTP: " + conn.getResponseCode());
-        }
-        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = br.readLine()) != null) {
-            response.append(line);
-        }
-        br.close();
-        conn.disconnect();
-        //System.out.println(response.toString());
-        return response.toString();
-    }
-
-    public String obtenerTerminalPorIp(String ip) throws IOException {
-        String urlString = "http://localhost:4000/api/terminal/" + ip;
+    public String requestTerminalPorIp(String ip) throws IOException {
+        String urlString = "http://localhost:4000/api/terminal/ip/" + ip;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -298,21 +293,13 @@ public class ListarRespaldosController implements Initializable {
         br.close();
         conn.disconnect();
         String jsonResponse = response.toString();
-        Platform.runLater(() -> {
-            switch (status) {
-                case 200:
-                    //mostrarAlerta(Alert.AlertType.INFORMATION, "Éxito", "Terminal y usuarios cargados.");
-                    break;
-                case 404:
-                    //mostrarAlerta(Alert.AlertType.WARNING, "No encontrado", "El terminal con esa IP no existe.");
-                    break;
-                case 500:
-                    //mostrarAlerta(Alert.AlertType.ERROR, "Error del servidor", "Hubo un error al procesar la solicitud.");
-                    break;
-                default:
-                    //mostrarAlerta(Alert.AlertType.ERROR, "Error", "Código inesperado: " + status);
-            }
-        });
         return jsonResponse;
+    }
+
+    public LocalDateTime convertir(Date fecha) {
+        LocalDateTime localDateTime = fecha.toInstant()
+                .atZone(ZoneId.systemDefault())
+                .toLocalDateTime();
+        return localDateTime;
     }
 }
