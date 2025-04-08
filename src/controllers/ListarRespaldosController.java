@@ -1,14 +1,12 @@
 package controllers;
 
 import components.toast.ToastController;
-import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
@@ -79,6 +77,7 @@ public class ListarRespaldosController implements Initializable {
     Terminal terminal = null;
     MainController mc = null;
     Respaldo respaldoActual = null;
+    JSONObject jsonBackup = null;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @Override
@@ -174,7 +173,7 @@ public class ListarRespaldosController implements Initializable {
         this.terminal = terminal;
         this.mc = mc;
         respaldos = FXCollections.observableArrayList(Model.fetchQuery(ModelQuery.select().
-                from(Respaldo.class).where(C.eq("terminal", terminal.id)).
+                from(Respaldo.class).where(C.eq("terminal", terminal.id)).orderBy("-Respaldo.fecha").
                 getQuery(), Respaldo.class));
         tv_respaldos.setItems(respaldos);
         lbl_pri_nombre.setText(terminal.nombre);
@@ -204,6 +203,7 @@ public class ListarRespaldosController implements Initializable {
                 ZonedDateTime zonedUtc = ZonedDateTime.parse(resObj.getString("ultSincronizacion"));
                 ZonedDateTime zonedLaPaz = zonedUtc.withZoneSameInstant(ZoneId.of("America/La_Paz"));
                 LocalDateTime ult_sinc = zonedLaPaz.toLocalDateTime();
+
                 JSONArray usuariosJSON = resObj.getJSONArray("usuarios");
                 List<Usuario> usuariosActuales = new ArrayList<>();
                 for (int i = 0; i < usuariosJSON.length(); i++) {
@@ -223,6 +223,8 @@ public class ListarRespaldosController implements Initializable {
                 String fullPath = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
                 File file = new File(fullPath);
                 cargarBackup(file);
+                String postJSON = filtrarMarcacionesDesde(jsonBackup.toString(), ult_sinc);
+                System.out.println(requestSincronizar(postJSON, usuariosJSON.toString(), 1));
             } else {
                 mostrarError(jsonObject.getString("respuesta"));
             }
@@ -261,9 +263,9 @@ public class ListarRespaldosController implements Initializable {
                 sb.append(linea);
             }
             // Convertir a JSONObject
-            JSONObject jsonObject = new JSONObject(sb.toString());
+            jsonBackup = new JSONObject(sb.toString());
             // Obtener el array de usuarios
-            JSONArray usuariosArray = jsonObject.getJSONArray("usuarios");
+            JSONArray usuariosArray = jsonBackup.getJSONArray("usuarios");
             // Convertir cada objeto a la clase Usuario
             List<Usuario> nuevosUsuarios = new ArrayList<>();
             for (int i = 0; i < usuariosArray.length(); i++) {
@@ -304,5 +306,77 @@ public class ListarRespaldosController implements Initializable {
                 .atZone(ZoneId.systemDefault())
                 .toLocalDateTime();
         return localDateTime;
+    }
+
+    public String filtrarMarcacionesDesde(String jsonOriginal, LocalDateTime fechaSync) {
+        JSONObject originalObj = new JSONObject(jsonOriginal);
+        JSONArray marcaciones = originalObj.getJSONArray("marcaciones");
+        String numeroSerie = originalObj.getString("numero_serie");
+        int totalMarcaciones = originalObj.getInt("total_marcaciones");
+        String horaTerminal = originalObj.getString("hora_terminal");
+        // Filtrar marcaciones
+        JSONArray filtradas = new JSONArray();
+        for (int i = 0; i < marcaciones.length(); i++) {
+            JSONObject m = marcaciones.getJSONObject(i);
+            LocalDateTime ts = LocalDateTime.parse(m.getString("timestamp"));
+            if (!ts.isBefore(fechaSync)) {
+                filtradas.put(m);
+            }
+        }
+        // Crear resultado
+        JSONObject resultado = new JSONObject();
+        resultado.put("numero_serie", numeroSerie);
+        resultado.put("hora_terminal", horaTerminal);
+        resultado.put("total_marcaciones", totalMarcaciones);
+        resultado.put("marcaciones", filtradas);
+
+        return resultado.toString(4); // Pretty print con 4 espacios
+    }
+
+    public String requestSincronizar(String infoJSON, String usuariosJSON, int terminalId) {
+        String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
+        HttpURLConnection conn = null;
+
+        try {
+            URL url = new URL(urlStr);
+            conn = (HttpURLConnection) url.openConnection();
+            conn.setRequestMethod("POST");
+            conn.setRequestProperty("Content-Type", "application/json");
+            conn.setRequestProperty("Accept", "application/json");
+            conn.setDoOutput(true);
+            // Crear el JSON combinado como texto
+            JSONObject finalPayload = new JSONObject();
+            finalPayload.put("info", infoJSON); // JSON como texto
+            finalPayload.put("usuarios", usuariosJSON);       // JSON como texto
+            String body = finalPayload.toString();
+            try (OutputStream os = conn.getOutputStream();
+                 OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8")) {
+                writer.write(body);
+                writer.flush();
+            }
+            // Leer respuesta
+            int responseCode = conn.getResponseCode();
+            System.out.println("Código de respuesta: " + responseCode);
+            InputStream is = (responseCode >= 200 && responseCode < 300)
+                    ? conn.getInputStream()
+                    : conn.getErrorStream();
+            BufferedReader in = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+            StringBuilder response = new StringBuilder();
+            String line;
+            while ((line = in.readLine()) != null) {
+                response.append(line.trim());
+            }
+            in.close();
+
+            return response.toString();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return "{\"error\":\"" + e.getMessage() + "\"}";
+        } finally {
+            if (conn != null) {
+                conn.disconnect();
+            }
+        }
     }
 }

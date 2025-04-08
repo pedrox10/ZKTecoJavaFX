@@ -459,6 +459,12 @@
 	-fx-background-color: transparent;
 }
 
+.table-view .column-header-background {
+	-fx-background-color: #f4f4f4;
+	-fx-border-color: #c8c8c8 transparent transparent transparent; /* Borde superior */
+	-fx-border-width: 1px 0 0 0; /* Solo arriba */
+}
+
 .table-row-cell, .tree-table-row-cell {
 	-fx-cell-size: 40px;
 }
@@ -821,4 +827,11 @@
 
 .hand {
 	-fx-cursor: hand;
+}
+
+.split-pane {
+	-fx-background-insets: 0;
+	-fx-padding: 0;
+	-fx-border-color: #c8c8c8;
+	-fx-border-width: 0 0 2 0;
 }

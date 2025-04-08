@@ -62,6 +62,7 @@ public class TerminalController implements Initializable {
     Terminal terminal = null;
     ObjectProperty<Terminal> op_terminal = new SimpleObjectProperty();
     MainController mc;
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY hh:mm");
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -102,7 +103,6 @@ public class TerminalController implements Initializable {
         if (terminal.getUltimoRespaldo() == null) {
             lbl_ult_sinc.setText("Nunca");
         } else {
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY hh:mm");
             lbl_ult_sinc.setText(sdf.format(terminal.getUltimoRespaldo().fecha));
         }
         op_root.setValue(root);
@@ -264,7 +264,8 @@ public class TerminalController implements Initializable {
                     jsonObject.put("hora_terminal", respuestaJson.getString("hora_terminal"));
                     jsonObject.put("total_marcaciones", respuestaJson.getInt("total_marcaciones"));
                     Date fechaActual = new Date();
-                    String nombreArchivo = "Backup_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaActual) + ".json";
+                    String nombreTerminal = terminal.nombre.replaceAll("\\s+", "_");
+                    String nombreArchivo = nombreTerminal + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaActual) + ".json";
                     String basePath = Paths.get("").toAbsolutePath().toString();
                     String relativePath = "Backups";
                     String fullPath = basePath + File.separator + relativePath + File.separator + nombreArchivo;
@@ -279,7 +280,14 @@ public class TerminalController implements Initializable {
                         respaldo.fecha = fechaActual;
                         respaldo.nombre = nombreArchivo;  // Guardar solo el nombre del archivo
                         respaldo.terminal = terminal;
-                        Platform.runLater(() -> respaldo.insert());
+                        Platform.runLater(new Runnable() {
+                            @Override
+                            public void run() {
+                                respaldo.insert();
+                                terminal.respaldos.refreshList();
+                            }
+                        });
+
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -290,6 +298,7 @@ public class TerminalController implements Initializable {
             protected void succeeded() {
                 Platform.runLater(() -> {
                     root.getChildren().remove(loadingPane);
+                    lbl_ult_sinc.setText(sdf.format(terminal.getUltimoRespaldo().fecha));
                     ToastController toast = ToastController.createToast("success", "¡Listo!", "Datos guardados correctamente");
                     toast.show(root);
                 });

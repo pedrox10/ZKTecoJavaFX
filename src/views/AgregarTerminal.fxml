@@ -31,7 +31,7 @@
                         <Insets left="5.0" />
                      </padding>
                      <children>
-                        <Label text="Nombre: " />
+                        <Label style="-fx-font-weight: bold;" text="Nombre: " />
                         <TextField fx:id="tf_nombre" prefHeight="34.0" prefWidth="230.0" promptText="Terminal Buses" />
                      </children>
                   </HBox>
@@ -42,13 +42,13 @@
                      <children>
                         <HBox alignment="CENTER">
                            <children>
-                              <Label text="IP: " />
+                              <Label style="-fx-font-weight: bold;" text="IP: " />
                               <TextField fx:id="tf_ip" prefWidth="140.0" promptText="192.168.70.210" />
                            </children>
                         </HBox>
                         <HBox alignment="CENTER" layoutX="15.0" layoutY="10.0">
                            <children>
-                              <Label text="Puerto: " />
+                              <Label style="-fx-font-weight: bold;" text="Puerto: " />
                               <TextField fx:id="tf_puerto" prefWidth="70.0" promptText="4370" />
                            </children>
                         </HBox>

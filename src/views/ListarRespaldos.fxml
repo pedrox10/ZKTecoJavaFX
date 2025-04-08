@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.CheckBox?>
@@ -13,7 +17,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<AnchorPane xmlns="http://javafx.com/javafx/8.0.171" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ListarRespaldosController">
+<AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ListarRespaldosController">
    <children>
       <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="60.0" style="-fx-background-color: #295A8C;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
@@ -28,35 +32,49 @@
          <children>
             <VBox fx:id="vb_primer_paso" alignment="TOP_CENTER">
                <children>
-                  <HBox fx:id="hb_cabecera1" alignment="CENTER" maxHeight="55.0" spacing="10.0">
+                  <HBox fx:id="hb_cabecera1" alignment="CENTER" spacing="10.0">
                      <children>
-                        <VBox alignment="CENTER" maxHeight="40.0" style="-fx-padding: 0 0 0 0;">
+                        <VBox alignment="CENTER" style="-fx-padding: 0 0 0 0;">
                            <children>
-                              <Label fx:id="lbl_pri_nombre" style="-fx-padding: 0 0 0 0;" styleClass="card-subtitle" text="Nombre" />
-                              <Label fx:id="lbl_pri_ip" style="-fx-padding: 0 0 0 0;" styleClass="control-label" text="ip" />
+                              <Label fx:id="lbl_pri_nombre" style="-fx-padding: 0 0 0 0;" styleClass="card-title" text="Nombre" />
+                              <Label fx:id="lbl_pri_ip" style="-fx-padding: 0 0 0 0;" styleClass="card-subtitle" text="ip" />
                            </children>
                         </VBox>
                      </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+                     </padding>
                   </HBox>
-                  <TableView fx:id="tv_respaldos" prefHeight="549.0">
+                  <TableView fx:id="tv_respaldos" prefHeight="490.0">
                      <columns>
                         <TableColumn fx:id="tc_fecha" prefWidth="175.0" text="Fecha Respaldo">
                            <graphic>
                               <Label fx:id="ic_fecha" styleClass="icon" text="X" />
-                           </graphic></TableColumn>
+                           </graphic>
+                        </TableColumn>
                         <TableColumn fx:id="tc_nombre" prefWidth="340.0" text="Nombre Archivo">
                            <graphic>
                               <Label fx:id="ic_archivo" styleClass="icon" text="X" />
-                           </graphic></TableColumn>
+                           </graphic>
+                        </TableColumn>
                         <TableColumn fx:id="tc_fecha_sincronizacion" minWidth="0.0" prefWidth="175.0" text="¿Fue Sincronizado?">
                            <graphic>
                               <Label fx:id="ic_sincronizado" styleClass="icon" text="X" />
-                           </graphic></TableColumn>
+                           </graphic>
+                        </TableColumn>
                      </columns>
                      <padding>
                         <Insets left="5.0" right="5.0" />
                      </padding>
                   </TableView>
+                  <HBox>
+                     <children>
+                        <Label style="-fx-padding: 5 0 0 0;" styleClass="control-label" text="Selecciona una copia de respaldo" />
+                     </children>
+                     <padding>
+                        <Insets bottom="10.0" left="10.0" right="10.0" />
+                     </padding>
+                  </HBox>
                   <HBox alignment="CENTER_RIGHT" prefHeight="65.0" spacing="10.0" style="-fx-background-color: #DDD;">
                      <children>
                         <Button fx:id="btn_cerrar" cancelButton="true" mnemonicParsing="false" onAction="#cerrarDialog" styleClass="button-raised" text="Cancelar" />
