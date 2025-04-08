@@ -21,6 +21,7 @@ import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
+import javafx.stage.Modality;
 import javafx.stage.Window;
 import javafx.stage.WindowEvent;
 import models.Respaldo;
@@ -210,6 +211,8 @@ public class TerminalController implements Initializable {
         ListarRespaldosController lrc = loader.getController();
         lrc.initData(terminal, mc);
         AnchorPane root = (AnchorPane) loader.getRoot();
+        dialogo.initModality(Modality.APPLICATION_MODAL);
+        dialogo.initOwner(mc.pane_mascara.getScene().getWindow());
         dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
         dialogo.getDialogPane().setContent(root);
         Node buttonBar = dialogo.getDialogPane().lookup(".button-bar");

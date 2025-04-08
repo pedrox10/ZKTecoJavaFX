@@ -1,6 +1,7 @@
 package controllers;
 
 import components.toast.ToastController;
+import javafx.application.Platform;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -60,7 +61,8 @@ public class ListarRespaldosController implements Initializable {
     public TableView tv_actuales;
     public TableColumn tc_actuales_nombre;
     public TableColumn tc_actuales_ci;
-    public Label lbl_seg_nombre;
+    public Label lbl_nombre_backup;
+    public Label lbl_nombre_actual;
     public Label lbl_seg_ip;
     public Label lbl_fecha_respaldo;
     public Label lbl_ult_sinc;
@@ -194,7 +196,7 @@ public class ListarRespaldosController implements Initializable {
             JSONObject jsonObject = new JSONObject(res);
             boolean exito = jsonObject.getBoolean("exito");
             if (exito) {
-                lbl_seg_nombre.setText(terminal.nombre);
+                lbl_nombre_backup.setText(terminal.nombre);
                 lbl_seg_ip.setText(terminal.ip);
                 lbl_fecha_respaldo.setText(formatter.format(convertir(respaldoActual.fecha)));
 
@@ -211,6 +213,7 @@ public class ListarRespaldosController implements Initializable {
                     usuariosActuales.add(new Usuario(id, nombre));
                 }
                 tv_actuales.getItems().setAll(usuariosActuales);
+                lbl_nombre_actual.setText(resObj.getString("nombre"));
                 lbl_num_actuales.setText(usuariosActuales.size() + " funcionarios");
                 lbl_ult_sinc.setText(formatter.format(ult_sinc));
                 vb_primer_paso.setVisible(false);
