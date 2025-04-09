@@ -35,15 +35,20 @@ public class ToastController {
     }
 
     private void setup(String tipo, String title, String message) {
-        if(tipo.equalsIgnoreCase("success")) {
-            iconLabel.setStyle("-fx-text-fill: #2f902f;");
-            iconLabel.setText("\ue86c");
-        } else {
-            if(tipo.equalsIgnoreCase("error")) {
+        switch (tipo) {
+            case "success":
+                iconLabel.setStyle("-fx-text-fill: #2f902f;");
+                iconLabel.setText("\ue86c");
+                break;
+            case "error":
                 iconLabel.setStyle("-fx-text-fill: #ce5656;");
                 iconLabel.setText("\ue15c");
-            }
+                break;
+            case "info":
+                iconLabel.setStyle("-fx-text-fill: #f8c453;");
+                iconLabel.setText("\ue88e");
         }
+
         titleLabel.setText(title);
         messageLabel.setText(message);
         popup = new Popup();

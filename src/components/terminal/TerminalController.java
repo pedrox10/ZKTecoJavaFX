@@ -191,7 +191,7 @@ public class TerminalController implements Initializable {
             toast.show(root);
             btn_respaldo.setDisable(false);
         } else {
-            toast = ToastController.createToast("error", "Error", "No se pudo conectar");
+            toast = ToastController.createToast("error", "Error", "No se pudo conectar al terminal");
             toast.show(root);
         }
     }

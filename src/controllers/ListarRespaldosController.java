@@ -77,7 +77,10 @@ public class ListarRespaldosController implements Initializable {
     Terminal terminal = null;
     MainController mc = null;
     Respaldo respaldoActual = null;
-    JSONObject jsonBackup = null;
+    JSONObject backupJSONObject = null;
+    JSONObject terminalJSONObject = null;
+    boolean fueSincronizado = false;
+    LocalDateTime ultimaSincronizacion;
     private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
 
     @Override
@@ -191,20 +194,16 @@ public class ListarRespaldosController implements Initializable {
     @FXML
     public void irSiguiente(ActionEvent event) {
         try {
-            String res = requestTerminalPorIp(terminal.ip);
-            JSONObject jsonObject = new JSONObject(res);
-            boolean exito = jsonObject.getBoolean("exito");
+            String respuestaTerminal = requestTerminalPorIp(terminal.ip);
+            JSONObject respuestaJSONObject = new JSONObject(respuestaTerminal);
+            boolean exito = respuestaJSONObject.getBoolean("exito");
             if (exito) {
                 lbl_nombre_backup.setText(terminal.nombre);
                 lbl_seg_ip.setText(terminal.ip);
                 lbl_fecha_respaldo.setText(formatter.format(convertir(respaldoActual.fecha)));
 
-                JSONObject resObj = jsonObject.getJSONObject("respuesta");
-                ZonedDateTime zonedUtc = ZonedDateTime.parse(resObj.getString("ultSincronizacion"));
-                ZonedDateTime zonedLaPaz = zonedUtc.withZoneSameInstant(ZoneId.of("America/La_Paz"));
-                LocalDateTime ult_sinc = zonedLaPaz.toLocalDateTime();
-
-                JSONArray usuariosJSON = resObj.getJSONArray("usuarios");
+                terminalJSONObject = respuestaJSONObject.getJSONObject("respuesta");
+                JSONArray usuariosJSON = terminalJSONObject.getJSONArray("usuarios");
                 List<Usuario> usuariosActuales = new ArrayList<>();
                 for (int i = 0; i < usuariosJSON.length(); i++) {
                     JSONObject u = usuariosJSON.getJSONObject(i);
@@ -213,9 +212,9 @@ public class ListarRespaldosController implements Initializable {
                     usuariosActuales.add(new Usuario(id, nombre));
                 }
                 tv_actuales.getItems().setAll(usuariosActuales);
-                lbl_nombre_actual.setText(resObj.getString("nombre"));
+                lbl_nombre_actual.setText(terminalJSONObject.getString("nombre"));
                 lbl_num_actuales.setText(usuariosActuales.size() + " funcionarios");
-                lbl_ult_sinc.setText(formatter.format(ult_sinc));
+
                 vb_primer_paso.setVisible(false);
                 vb_segundo_paso.setVisible(true);
                 String basePath = Paths.get("").toAbsolutePath().toString();
@@ -223,29 +222,54 @@ public class ListarRespaldosController implements Initializable {
                 String fullPath = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
                 File file = new File(fullPath);
                 cargarBackup(file);
-                String postJSON = filtrarMarcacionesDesde(jsonBackup.toString(), ult_sinc);
-                System.out.println(requestSincronizar(postJSON, usuariosJSON.toString(), 1));
+                String ultimaSync = terminalJSONObject.optString("ultSincronizacion", null);
+                fueSincronizado = ultimaSync != null;
+                if (fueSincronizado) {
+                    ZonedDateTime zonedUtc = ZonedDateTime.parse(terminalJSONObject.getString("ultSincronizacion"));
+                    ZonedDateTime zonedLaPaz = zonedUtc.withZoneSameInstant(ZoneId.of("America/La_Paz"));
+                    ultimaSincronizacion = zonedLaPaz.toLocalDateTime();
+                    lbl_ult_sinc.setText(formatter.format(ultimaSincronizacion));
+                } else {
+                    lbl_ult_sinc.setText("Nunca");
+                }
             } else {
-                mostrarError(jsonObject.getString("respuesta"));
+                ToastController toast = ToastController.createToast("info", "Información", respuestaJSONObject.getString("respuesta"));
+                toast.show(mc.root);
             }
         } catch (java.net.ConnectException ce) {
-            System.err.println("No se pudo conectar con el servidor");
-            mostrarError("No se pudo conectar con el servidor");
+            System.err.println("No se puede conectar con el servidor.");
+            mostrarError("No se puede conectar con el servidor.");
         } catch (java.net.SocketTimeoutException ste) {
             System.err.println("Tiempo de espera agotado al intentar conectar con el servidor.");
-            mostrarError("No se pudo conectar con el servidor");
+            mostrarError("Tiempo de espera agotado al intentar conectar con el servidor.");
         } catch (IOException ioe) {
             System.err.println("Error de entrada/salida: " + ioe.getMessage());
-            mostrarError("Error I/O");
+            mostrarError("Error de entrada/salida.");
         } catch (Exception e) {
             System.err.println("Error inesperado: " + e.getMessage());
-            mostrarError("¡Error inesperado!");
+            mostrarError("¡Error inesperado! Revisa los logs.");
         }
     }
 
     public void mostrarError(String error) {
         ToastController toast = ToastController.createToast("error", "¡Error!", error);
         toast.show(mc.root);
+    }
+
+    @FXML
+    public void sincronizar(ActionEvent event) {
+        JSONArray backupUsuarios = backupJSONObject.getJSONArray("usuarios");
+        if (fueSincronizado) {
+            String filtradosJSON = filtrarMarcacionesDesde(backupJSONObject.toString(), ultimaSincronizacion);
+            System.out.println(requestSincronizar(filtradosJSON, backupUsuarios.toString(), terminalJSONObject.getInt("id")));
+        } else {
+            JSONObject infoJSON = new JSONObject();
+            infoJSON.put("numero_serie", backupJSONObject.getString("numero_serie"));
+            infoJSON.put("hora_terminal", backupJSONObject.getString("hora_terminal"));
+            infoJSON.put("total_marcaciones", backupJSONObject.getInt("total_marcaciones"));
+            infoJSON.put("marcaciones", backupJSONObject.getJSONArray("marcaciones"));
+            System.out.println(requestSincronizar(infoJSON.toString(), backupUsuarios.toString(), terminalJSONObject.getInt("id")));
+        }
     }
 
     @FXML
@@ -263,9 +287,9 @@ public class ListarRespaldosController implements Initializable {
                 sb.append(linea);
             }
             // Convertir a JSONObject
-            jsonBackup = new JSONObject(sb.toString());
+            backupJSONObject = new JSONObject(sb.toString());
             // Obtener el array de usuarios
-            JSONArray usuariosArray = jsonBackup.getJSONArray("usuarios");
+            JSONArray usuariosArray = backupJSONObject.getJSONArray("usuarios");
             // Convertir cada objeto a la clase Usuario
             List<Usuario> nuevosUsuarios = new ArrayList<>();
             for (int i = 0; i < usuariosArray.length(); i++) {
@@ -356,7 +380,6 @@ public class ListarRespaldosController implements Initializable {
             }
             // Leer respuesta
             int responseCode = conn.getResponseCode();
-            System.out.println("Código de respuesta: " + responseCode);
             InputStream is = (responseCode >= 200 && responseCode < 300)
                     ? conn.getInputStream()
                     : conn.getErrorStream();

@@ -191,7 +191,7 @@
                   <HBox alignment="CENTER_RIGHT" prefHeight="65.0" spacing="10.0" style="-fx-background-color: #DDD;">
                      <children>
                         <Button fx:id="btn_atras" mnemonicParsing="false" onAction="#irAtras" styleClass="button-raised" text="Atras" />
-                        <Button fx:id="btn_sincronizar" defaultButton="true" mnemonicParsing="false" styleClass="button-raised" text="Sincronizar" />
+                        <Button fx:id="btn_sincronizar" defaultButton="true" mnemonicParsing="false" onAction="#sincronizar" styleClass="button-raised" text="Sincronizar" />
                      </children>
                      <padding>
                         <Insets right="20.0" />

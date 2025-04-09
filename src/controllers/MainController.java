@@ -146,7 +146,6 @@ public class MainController implements Initializable {
         for (Node n : fp_terminales.getChildren()) {
             StackPane stackPane = (StackPane) n; // Se asume que cada terminal es un StackPane
             Terminal t = (Terminal) stackPane.getUserData();
-            System.out.println(t);
             if (t.id == terminal.id) {
                 // Buscar el VBox con id "id_cabecera" dentro del StackPane
                 for (Node child : stackPane.getChildren()) {
