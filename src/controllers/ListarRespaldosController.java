@@ -1,5 +1,6 @@
 package controllers;
 
+import android.widget.Toast;
 import components.toast.ToastController;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -27,6 +28,7 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Paths;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -106,8 +108,6 @@ public class ListarRespaldosController implements Initializable {
         tc_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
         tc_fecha_sincronizacion.setCellValueFactory(new PropertyValueFactory<>("fechaSincronizacion"));
         tc_fecha_sincronizacion.setCellFactory(column -> new TableCell<Respaldo, Date>() {
-            private final DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
-
             @Override
             protected void updateItem(Date item, boolean empty) {
                 super.updateItem(item, empty);
@@ -229,8 +229,12 @@ public class ListarRespaldosController implements Initializable {
                     ZonedDateTime zonedLaPaz = zonedUtc.withZoneSameInstant(ZoneId.of("America/La_Paz"));
                     ultimaSincronizacion = zonedLaPaz.toLocalDateTime();
                     lbl_ult_sinc.setText(formatter.format(ultimaSincronizacion));
+                    JSONObject respuesta = new JSONObject(filtrarMarcacionesDesde(backupJSONObject.toString(), ultimaSincronizacion));
+                    JSONArray marcacionesNuevas = respuesta.getJSONArray("marcaciones");
+                    lbl_nuevas_marcaciones.setText("Se agregarán " + marcacionesNuevas.length() + " nuevas marcaciones");
                 } else {
                     lbl_ult_sinc.setText("Nunca");
+                    lbl_nuevas_marcaciones.setText("Se agregarán " + backupJSONObject.getInt("total_marcaciones") + " nuevas marcaciones");
                 }
             } else {
                 ToastController toast = ToastController.createToast("info", "Información", respuestaJSONObject.getString("respuesta"));
@@ -261,14 +265,20 @@ public class ListarRespaldosController implements Initializable {
         JSONArray backupUsuarios = backupJSONObject.getJSONArray("usuarios");
         if (fueSincronizado) {
             String filtradosJSON = filtrarMarcacionesDesde(backupJSONObject.toString(), ultimaSincronizacion);
-            System.out.println(requestSincronizar(filtradosJSON, backupUsuarios.toString(), terminalJSONObject.getInt("id")));
+            String[] respuesta = requestSincronizar(filtradosJSON, backupUsuarios.toString(), terminalJSONObject.getInt("id"));
+            int statusCode = Integer.parseInt(respuesta[0]);
+            String responseBody = respuesta[1];
+            procesarRespuestaSincronizacion(responseBody, statusCode);
         } else {
             JSONObject infoJSON = new JSONObject();
             infoJSON.put("numero_serie", backupJSONObject.getString("numero_serie"));
             infoJSON.put("hora_terminal", backupJSONObject.getString("hora_terminal"));
             infoJSON.put("total_marcaciones", backupJSONObject.getInt("total_marcaciones"));
             infoJSON.put("marcaciones", backupJSONObject.getJSONArray("marcaciones"));
-            System.out.println(requestSincronizar(infoJSON.toString(), backupUsuarios.toString(), terminalJSONObject.getInt("id")));
+            String[] respuesta = requestSincronizar(infoJSON.toString(), backupUsuarios.toString(), terminalJSONObject.getInt("id"));
+            int statusCode = Integer.parseInt(respuesta[0]);
+            String responseBody = respuesta[1];
+            procesarRespuestaSincronizacion(responseBody, statusCode);
         }
     }
 
@@ -353,14 +363,12 @@ public class ListarRespaldosController implements Initializable {
         resultado.put("hora_terminal", horaTerminal);
         resultado.put("total_marcaciones", totalMarcaciones);
         resultado.put("marcaciones", filtradas);
-
         return resultado.toString(4); // Pretty print con 4 espacios
     }
 
-    public String requestSincronizar(String infoJSON, String usuariosJSON, int terminalId) {
+    public String[] requestSincronizar(String infoJSON, String usuariosJSON, int terminalId) {
         String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
         HttpURLConnection conn = null;
-
         try {
             URL url = new URL(urlStr);
             conn = (HttpURLConnection) url.openConnection();
@@ -369,9 +377,13 @@ public class ListarRespaldosController implements Initializable {
             conn.setRequestProperty("Accept", "application/json");
             conn.setDoOutput(true);
             // Crear el JSON combinado como texto
+            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss");
+            String fechaStr = sdf.format(respaldoActual.fecha);
+            System.out.println(fechaStr);
             JSONObject finalPayload = new JSONObject();
             finalPayload.put("info", infoJSON); // JSON como texto
-            finalPayload.put("usuarios", usuariosJSON);       // JSON como texto
+            finalPayload.put("usuarios", usuariosJSON);
+            finalPayload.put("fecha_respaldo", fechaStr);
             String body = finalPayload.toString();
             try (OutputStream os = conn.getOutputStream();
                  OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8")) {
@@ -390,16 +402,59 @@ public class ListarRespaldosController implements Initializable {
                 response.append(line.trim());
             }
             in.close();
-
-            return response.toString();
-
+            return new String[]{String.valueOf(responseCode), response.toString()};
         } catch (Exception e) {
             e.printStackTrace();
-            return "{\"error\":\"" + e.getMessage() + "\"}";
+            return new String[]{"500", "{\"mensaje\":\"Excepción en cliente\",\"detalle\":\"" + e.getMessage() + "\"}"};
         } finally {
             if (conn != null) {
                 conn.disconnect();
             }
         }
+    }
+
+    public void procesarRespuestaSincronizacion(String responseJson, int statusCode) {
+        try {
+            JSONObject respuesta = new JSONObject(responseJson);
+            if (statusCode == 200) {
+                int nuevasMarcaciones = respuesta.optInt("nuevas_marcaciones", 0);
+                int usuariosAgregados = respuesta.optInt("usuarios_agregados", 0);
+                int usuariosEditados = respuesta.optInt("usuarios_editados", 0);
+                int usuariosEliminados = respuesta.optInt("usuarios_eliminados", 0);
+                String mensaje = respuesta.optString("mensaje", "Sincronización exitosa");
+                String resumen = mensaje + "\n\n" +
+                        "Nuevas marcaciones: " + nuevasMarcaciones + "\n" +
+                        "Usuarios agregados: " + usuariosAgregados + "\n" +
+                        "Usuarios editados: " + usuariosEditados + "\n" +
+                        "Usuarios eliminados: " + usuariosEliminados;
+                ToastController toast = ToastController.createToast("success", "Sincronización", resumen);
+                toast.show(mc.root);
+            } else {
+                String mensaje = respuesta.optString("mensaje", "¡Error!");
+                String detalle = respuesta.optString("detalle", "Sin detalles");
+                ToastController toast = ToastController.createToast("danger", mensaje, detalle);
+                toast.show(mc.root);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            ToastController toast = ToastController.createToast("danger", "Respuesta inválida", e.getMessage());
+            toast.show(mc.root);
+        }
+    }
+
+    public int indiceDe(Respaldo respaldo) {
+        int indice = -1;
+        for (Respaldo u : respaldos) {
+            if (u.id == respaldo.id) {
+                indice = respaldos.indexOf(u);
+                break;
+            }
+        }
+        return indice;
+    }
+
+    public void actualizarRespaldo(Respaldo respaldo) {
+        respaldos.set(indiceDe(respaldo), respaldo);
     }
 }

@@ -62,7 +62,7 @@ public class TerminalController implements Initializable {
     Terminal terminal = null;
     ObjectProperty<Terminal> op_terminal = new SimpleObjectProperty();
     MainController mc;
-    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY hh:mm");
+    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/YYYY HH:mm");
 
     @FXML
     public void initialize(URL url, ResourceBundle resourceBundle) {

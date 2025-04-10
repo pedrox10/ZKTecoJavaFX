@@ -1,22 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
 <?import javafx.scene.layout.*?>
-<?import javafx.geometry.Insets?>
-<?import javafx.scene.control.Button?>
-<?import javafx.scene.control.CheckBox?>
-<?import javafx.scene.control.Label?>
-<?import javafx.scene.control.SplitPane?>
-<?import javafx.scene.control.TableColumn?>
-<?import javafx.scene.control.TableView?>
-<?import javafx.scene.layout.AnchorPane?>
-<?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Region?>
-<?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.layout.VBox?>
-
 <AnchorPane xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.ListarRespaldosController">
    <children>
       <HBox alignment="CENTER_LEFT" layoutX="10.0" layoutY="10.0" prefHeight="60.0" style="-fx-background-color: #295A8C;" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
@@ -47,17 +33,17 @@
                   </HBox>
                   <TableView fx:id="tv_respaldos" prefHeight="490.0">
                      <columns>
-                        <TableColumn fx:id="tc_fecha" prefWidth="175.0" text="Fecha Respaldo">
+                        <TableColumn fx:id="tc_fecha" prefWidth="175.0" sortable="false" text="Fecha Respaldo">
                            <graphic>
                               <Label fx:id="ic_fecha" styleClass="icon" text="X" />
                            </graphic>
                         </TableColumn>
-                        <TableColumn fx:id="tc_nombre" prefWidth="340.0" text="Nombre Archivo">
+                        <TableColumn fx:id="tc_nombre" prefWidth="340.0" sortable="false" text="Nombre Archivo">
                            <graphic>
                               <Label fx:id="ic_archivo" styleClass="icon" text="X" />
                            </graphic>
                         </TableColumn>
-                        <TableColumn fx:id="tc_fecha_sincronizacion" minWidth="0.0" prefWidth="175.0" text="¿Fue Sincronizado?">
+                        <TableColumn fx:id="tc_fecha_sincronizacion" minWidth="0.0" prefWidth="175.0" sortable="false" text="¿Fue Sincronizado?">
                            <graphic>
                               <Label fx:id="ic_sincronizado" styleClass="icon" text="X" />
                            </graphic>
@@ -143,8 +129,8 @@
                                  <children>
                                     <TableView fx:id="tv_nuevos" layoutX="20.0" layoutY="6.0" prefHeight="545.0">
                                        <columns>
-                                          <TableColumn fx:id="tc_nuevos_nombre" maxWidth="1.7976931348623157E308" minWidth="230.0" prefWidth="-1.0" text="Nombre" />
-                                          <TableColumn fx:id="tc_nuevos_ci" minWidth="40.0" prefWidth="95.0" text="CI" />
+                                          <TableColumn fx:id="tc_nuevos_nombre" maxWidth="1.7976931348623157E308" minWidth="230.0" prefWidth="-1.0" sortable="false" text="Nombre" />
+                                          <TableColumn fx:id="tc_nuevos_ci" minWidth="40.0" prefWidth="95.0" sortable="false" text="CI" />
                                        </columns>
                                     </TableView>
                                  </children>
@@ -157,8 +143,8 @@
                                  <children>
                                     <TableView fx:id="tv_actuales" layoutX="20.0" layoutY="6.0" prefHeight="545.0">
                                        <columns>
-                                          <TableColumn fx:id="tc_actuales_nombre" maxWidth="1.7976931348623157E308" minWidth="230.0" prefWidth="-1.0" text="Nombre" />
-                                          <TableColumn fx:id="tc_actuales_ci" minWidth="40.0" prefWidth="95.0" text="CI" />
+                                          <TableColumn fx:id="tc_actuales_nombre" maxWidth="1.7976931348623157E308" minWidth="230.0" prefWidth="-1.0" sortable="false" text="Nombre" />
+                                          <TableColumn fx:id="tc_actuales_ci" minWidth="40.0" prefWidth="95.0" sortable="false" text="CI" />
                                        </columns>
                                     </TableView>
                                  </children>
