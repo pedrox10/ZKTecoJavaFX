@@ -1,6 +1,7 @@
 package controllers;
 
 import android.widget.Toast;
+import app.Main;
 import components.toast.ToastController;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -34,10 +35,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class ListarRespaldosController implements Initializable {
 
@@ -367,78 +365,117 @@ public class ListarRespaldosController implements Initializable {
     }
 
     public String[] requestSincronizar(String infoJSON, String usuariosJSON, int terminalId) {
-        String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
-        HttpURLConnection conn = null;
-        try {
-            URL url = new URL(urlStr);
-            conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json");
-            conn.setRequestProperty("Accept", "application/json");
-            conn.setDoOutput(true);
-            // Crear el JSON combinado como texto
-            SimpleDateFormat sdf = new SimpleDateFormat("YYYY-MM-dd'T'HH:mm:ss");
-            String fechaStr = sdf.format(respaldoActual.fecha);
-            System.out.println(fechaStr);
-            JSONObject finalPayload = new JSONObject();
-            finalPayload.put("info", infoJSON); // JSON como texto
-            finalPayload.put("usuarios", usuariosJSON);
-            finalPayload.put("fecha_respaldo", fechaStr);
-            String body = finalPayload.toString();
-            try (OutputStream os = conn.getOutputStream();
-                 OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8")) {
-                writer.write(body);
-                writer.flush();
+        LocalDateTime fechaNueva = convertir(respaldoActual.fecha);
+        System.out.println(ultimaSincronizacion.format(formatter));
+
+        if (fechaNueva.isAfter(ultimaSincronizacion) || ultimaSincronizacion == null) {
+            if (ultimaSincronizacion != null) {
+                String numeroSerieBackup = backupJSONObject.getString("numero_serie");
+                String numeroSerieTerminal = terminalJSONObject.getString("numSerie");
+
+                if (!numeroSerieBackup.equals(numeroSerieTerminal)) {
+                    // Mostrar alerta de confirmación
+                    Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                    alert.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+                    alert.setTitle("Confirmación");
+                    alert.setHeaderText("Número de serie diferente");
+                    Label label = new Label("El número de serie del respaldo no coincide con el de la terminal.\nPor favor, verifique si desea continuar.");
+                    label.setWrapText(true);
+                    label.setStyle("-fx-padding: 10;");
+                    alert.getDialogPane().setContent(label);
+                    mc.pane_mascara.toFront();
+
+                    Optional<ButtonType> result = alert.showAndWait();
+                    if (!result.isPresent() || result.get() != ButtonType.OK) {
+                        JSONObject errorJson = new JSONObject();
+                        errorJson.put("mensaje", "Información");
+                        errorJson.put("detalle", "Sincronizacion cancelada");
+                        return new String[]{"-1", errorJson.toString()};
+                    }
+                }
             }
-            // Leer respuesta
-            int responseCode = conn.getResponseCode();
-            InputStream is = (responseCode >= 200 && responseCode < 300)
-                    ? conn.getInputStream()
-                    : conn.getErrorStream();
-            BufferedReader in = new BufferedReader(new InputStreamReader(is, "UTF-8"));
-            StringBuilder response = new StringBuilder();
-            String line;
-            while ((line = in.readLine()) != null) {
-                response.append(line.trim());
+            //Código del request
+            String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
+            HttpURLConnection conn = null;
+            try {
+                URL url = new URL(urlStr);
+                conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("POST");
+                conn.setRequestProperty("Content-Type", "application/json");
+                conn.setRequestProperty("Accept", "application/json");
+                conn.setDoOutput(true);
+                JSONObject finalPayload = new JSONObject();
+                finalPayload.put("info", infoJSON); // JSON como texto
+                finalPayload.put("usuarios", usuariosJSON);
+                String body = finalPayload.toString();
+                try (OutputStream os = conn.getOutputStream();
+                     OutputStreamWriter writer = new OutputStreamWriter(os, "UTF-8")) {
+                    writer.write(body);
+                    writer.flush();
+                }
+                // Leer respuesta
+                int responseCode = conn.getResponseCode();
+                InputStream is = (responseCode >= 200 && responseCode < 300)
+                        ? conn.getInputStream()
+                        : conn.getErrorStream();
+                BufferedReader in = new BufferedReader(new InputStreamReader(is, "UTF-8"));
+                StringBuilder response = new StringBuilder();
+                String line;
+                while ((line = in.readLine()) != null) {
+                    response.append(line.trim());
+                }
+                in.close();
+                return new String[]{String.valueOf(responseCode), response.toString()};
+            } catch (Exception e) {
+                e.printStackTrace();
+                JSONObject errorJson = new JSONObject();
+                errorJson.put("mensaje", "Excepción en cliente");
+                errorJson.put("detalle", e.getMessage());
+                return new String[]{"500", errorJson.toString()};
+            } finally {
+                if (conn != null) {
+                    conn.disconnect();
+                }
             }
-            in.close();
-            return new String[]{String.valueOf(responseCode), response.toString()};
-        } catch (Exception e) {
-            e.printStackTrace();
-            return new String[]{"500", "{\"mensaje\":\"Excepción en cliente\",\"detalle\":\"" + e.getMessage() + "\"}"};
-        } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
+
+        } else {
+            JSONObject errorJson = new JSONObject();
+            errorJson.put("mensaje", "No se puede sincronizar");
+            errorJson.put("detalle", "El Terminal ya fué sincronizado con\nuna fecha posterior a este respaldo");
+            return new String[]{"-2", errorJson.toString()};
         }
     }
 
     public void procesarRespuestaSincronizacion(String responseJson, int statusCode) {
         try {
             JSONObject respuesta = new JSONObject(responseJson);
-            if (statusCode == 200) {
-                int nuevasMarcaciones = respuesta.optInt("nuevas_marcaciones", 0);
-                int usuariosAgregados = respuesta.optInt("usuarios_agregados", 0);
-                int usuariosEditados = respuesta.optInt("usuarios_editados", 0);
-                int usuariosEliminados = respuesta.optInt("usuarios_eliminados", 0);
-                String mensaje = respuesta.optString("mensaje", "Sincronización exitosa");
-                String resumen = mensaje + "\n\n" +
-                        "Nuevas marcaciones: " + nuevasMarcaciones + "\n" +
-                        "Usuarios agregados: " + usuariosAgregados + "\n" +
-                        "Usuarios editados: " + usuariosEditados + "\n" +
-                        "Usuarios eliminados: " + usuariosEliminados;
-                ToastController toast = ToastController.createToast("success", "Sincronización", resumen);
-                toast.show(mc.root);
-            } else {
-                String mensaje = respuesta.optString("mensaje", "¡Error!");
-                String detalle = respuesta.optString("detalle", "Sin detalles");
-                ToastController toast = ToastController.createToast("danger", mensaje, detalle);
-                toast.show(mc.root);
+            ToastController toast;
+            switch (statusCode) {
+                case 200:
+                    int nuevasMarcaciones = respuesta.optInt("nuevas_marcaciones", 0);
+                    int usuariosAgregados = respuesta.optInt("usuarios_agregados", 0);
+                    int usuariosEditados = respuesta.optInt("usuarios_editados", 0);
+                    int usuariosEliminados = respuesta.optInt("usuarios_eliminados", 0);
+                    String mensaje = respuesta.optString("mensaje", "Sincronización exitosa");
+                    String resumen = mensaje + "\n\n" +
+                            "Nuevas marcaciones: " + nuevasMarcaciones + "\n" +
+                            "Usuarios agregados: " + usuariosAgregados + "\n" +
+                            "Usuarios editados: " + usuariosEditados + "\n" +
+                            "Usuarios eliminados: " + usuariosEliminados;
+                    toast = ToastController.createToast("success", "Sincronización", resumen);
+                    toast.show(mc.root);
+                    break;
+                case 500:
+                    toast = ToastController.createToast("error", respuesta.optString("mensaje", "¡Error!"), respuesta.optString("detalle", "Sin detalles"));
+                    toast.show(mc.root);
+                    break;
+                default:
+                    toast = ToastController.createToast("info", respuesta.optString("mensaje", "¡Error!"), respuesta.optString("detalle", "Sin detalles"));
+                    toast.show(mc.root);
             }
-
         } catch (Exception e) {
             e.printStackTrace();
-            ToastController toast = ToastController.createToast("danger", "Respuesta inválida", e.getMessage());
+            ToastController toast = ToastController.createToast("error", "Respuesta inválida", e.getMessage());
             toast.show(mc.root);
         }
     }

@@ -263,9 +263,10 @@ public class TerminalController implements Initializable {
                     jsonObject.put("numero_serie", respuestaJson.getString("numero_serie"));
                     jsonObject.put("hora_terminal", respuestaJson.getString("hora_terminal"));
                     jsonObject.put("total_marcaciones", respuestaJson.getInt("total_marcaciones"));
-                    Date fechaActual = new Date();
+                    SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                    Date fechaRespaldo = formatter.parse(respuestaJson.getString("hora_terminal"));
                     String nombreTerminal = terminal.nombre.replaceAll("\\s+", "_");
-                    String nombreArchivo = nombreTerminal + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaActual) + ".json";
+                    String nombreArchivo = nombreTerminal + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaRespaldo) + ".json";
                     String basePath = Paths.get("").toAbsolutePath().toString();
                     String relativePath = "Backups";
                     String fullPath = basePath + File.separator + relativePath + File.separator + nombreArchivo;
@@ -277,7 +278,7 @@ public class TerminalController implements Initializable {
                         file.write(jsonObject.toString(4)); // JSON con indentación
                         System.out.println("Archivo JSON generado en: " + fullPath);
                         Respaldo respaldo = new Respaldo();
-                        respaldo.fecha = fechaActual;
+                        respaldo.fecha = fechaRespaldo;
                         respaldo.nombre = nombreArchivo;  // Guardar solo el nombre del archivo
                         respaldo.terminal = terminal;
                         Platform.runLater(new Runnable() {
