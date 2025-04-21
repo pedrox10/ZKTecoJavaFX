@@ -379,7 +379,9 @@ public class ListarRespaldosController implements Initializable {
                     alert.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
                     alert.setTitle("Confirmación");
                     alert.setHeaderText("Número de serie diferente");
-                    Label label = new Label("El número de serie del respaldo no coincide con el de la terminal.\nPor favor, verifique si desea continuar.");
+                    Label label = new Label("¡El número de serie del respaldo no coincide con el de el terminal!\n" +
+                            "Esto puede ocurrir si se esta cargando por error los datos de otro terminal\n" +
+                            "o si el terminal fue cambiado por fallas tecnicas. ¿Deseas continuar?");
                     label.setWrapText(true);
                     label.setStyle("-fx-padding: 10;");
                     alert.getDialogPane().setContent(label);
@@ -395,7 +397,7 @@ public class ListarRespaldosController implements Initializable {
                 }
             }
             //Código del request
-            String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
+                String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
             HttpURLConnection conn = null;
             try {
                 URL url = new URL(urlStr);

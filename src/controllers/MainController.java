@@ -50,6 +50,8 @@ public class MainController implements Initializable {
                 if (newValue != null) {
                     root = newValue;
                     btn_agregar.setText("\ue147");
+                    Tooltip tooltip = new Tooltip("Agregar Terminal");
+                    btn_agregar.setTooltip(tooltip);
                     terminales = FXCollections.observableArrayList(Model.fetchAll(Terminal.class));
                     for (Terminal terminal : terminales) {
                         agregarTerminalUI(terminal);

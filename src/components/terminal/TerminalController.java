@@ -42,6 +42,8 @@ public class TerminalController implements Initializable {
     @FXML
     private VBox vb_cerrar;
     @FXML
+    private Label lbl_cerrar;
+    @FXML
     private Label lbl_editar;
     @FXML
     private VBox vb_cabecera;
@@ -70,9 +72,15 @@ public class TerminalController implements Initializable {
         lbl_nombre.getStyleClass().add("terminal-titulo");
         lbl_ip.getStyleClass().add("subtitulo");
         lbl_editar.setText("\ue3c9");
-        //lbl_editar.setStyle("-fx-font-size: 18px");
+        Tooltip tt_editar = new Tooltip("Editar Terminal");
+        lbl_editar.setTooltip(tt_editar);
+        Tooltip tt_eliminar = new Tooltip("Eliminar Terminal");
+        tt_eliminar.setStyle("-fx-font-size: 12px;");
+        lbl_cerrar.setTooltip(tt_eliminar);
         vb_cerrar.toFront();
         lbl_upload.setText("\ue2c3");
+        Tooltip tt_ver_respaldos = new Tooltip("Ver Copias de Respaldo");
+        lbl_upload.setTooltip(tt_ver_respaldos);
         vb_cabecera.getStyleClass().add("terminal");
         lbl_ult_sinc.getStyleClass().add("terminal-sync");
 
@@ -162,8 +170,7 @@ public class TerminalController implements Initializable {
         alert.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
         alert.setTitle("Confirmar eliminación");
         alert.setHeaderText("Eliminar");
-        alert.setContentText("¿Estás seguro de que deseas eliminar este terminal?");
-        Label contenido = new Label("¿Estás seguro de que deseas eliminar este terminal?");
+        Label contenido = new Label("¿Estás seguro de que deseas eliminar este terminal?.\nSe borrará el terminal y todas sus copias de respaldo");
         contenido.setStyle("-fx-font-size: 14px; -fx-padding: 25 15 25 15;");
         alert.getDialogPane().setContent(contenido);
         mc.pane_mascara.setVisible(true);
@@ -310,7 +317,14 @@ public class TerminalController implements Initializable {
 
     public static String ejecutarScriptPython(String scriptPath, String ip, String puerto) throws IOException {
         // Construir el comando
-        ProcessBuilder processBuilder = new ProcessBuilder("python3", scriptPath, ip, puerto);
+        String os = System.getProperty("os.name").toLowerCase();
+        String comandoPython;
+        if (os.contains("win")) {
+            comandoPython = "python"; // En Windows suele ser solo "python"
+        } else {
+            comandoPython = "python3"; // En Linux o macOS normalmente es "python3"
+        }
+        ProcessBuilder processBuilder = new ProcessBuilder(comandoPython, scriptPath, ip, puerto);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
         // Leer la salida del script Python
