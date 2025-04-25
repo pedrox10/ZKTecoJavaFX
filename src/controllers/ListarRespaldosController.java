@@ -366,9 +366,8 @@ public class ListarRespaldosController implements Initializable {
 
     public String[] requestSincronizar(String infoJSON, String usuariosJSON, int terminalId) {
         LocalDateTime fechaNueva = convertir(respaldoActual.fecha);
-        System.out.println(ultimaSincronizacion.format(formatter));
 
-        if (fechaNueva.isAfter(ultimaSincronizacion) || ultimaSincronizacion == null) {
+        if ( ultimaSincronizacion == null || fechaNueva.isAfter(ultimaSincronizacion)) {
             if (ultimaSincronizacion != null) {
                 String numeroSerieBackup = backupJSONObject.getString("numero_serie");
                 String numeroSerieTerminal = terminalJSONObject.getString("numSerie");
@@ -397,7 +396,7 @@ public class ListarRespaldosController implements Initializable {
                 }
             }
             //Código del request
-                String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
+            String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
             HttpURLConnection conn = null;
             try {
                 URL url = new URL(urlStr);
@@ -458,14 +457,21 @@ public class ListarRespaldosController implements Initializable {
                     int usuariosAgregados = respuesta.optInt("usuarios_agregados", 0);
                     int usuariosEditados = respuesta.optInt("usuarios_editados", 0);
                     int usuariosEliminados = respuesta.optInt("usuarios_eliminados", 0);
+                    String horaServidor = respuesta.getString("hora_servidor");
+                    ZonedDateTime zdt = ZonedDateTime.parse(horaServidor);
+                    Date fechaSincronizacion = Date.from(zdt.withZoneSameInstant(ZoneId.systemDefault()).toInstant());
+                    respaldoActual.fechaSincronizacion = fechaSincronizacion;
+                    respaldoActual.update();
                     String mensaje = respuesta.optString("mensaje", "Sincronización exitosa");
                     String resumen = mensaje + "\n\n" +
                             "Nuevas marcaciones: " + nuevasMarcaciones + "\n" +
                             "Usuarios agregados: " + usuariosAgregados + "\n" +
                             "Usuarios editados: " + usuariosEditados + "\n" +
                             "Usuarios eliminados: " + usuariosEliminados;
+                    cerrarDialog(null);
                     toast = ToastController.createToast("success", "Sincronización", resumen);
                     toast.show(mc.root);
+
                     break;
                 case 500:
                     toast = ToastController.createToast("error", respuesta.optString("mensaje", "¡Error!"), respuesta.optString("detalle", "Sin detalles"));

@@ -9,6 +9,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.text.Font;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
+import models.Configuracion;
 import models.Respaldo;
 import models.Terminal;
 import org.orman.dbms.Database;
@@ -24,6 +25,7 @@ public class Main extends Application {
         MappingSession.registerDatabase(db);
         MappingSession.registerEntity(Terminal.class);
         MappingSession.registerEntity(Respaldo.class);
+        MappingSession.registerEntity(Configuracion.class);
         MappingSession.start();
         Font.loadFont(getClass().getResourceAsStream("/fonts/MaterialIcons-Regular.ttf"), 12);
         Font.loadFont(getClass().getResourceAsStream("/fonts/Roboto-Regular.ttf"), 12);
@@ -33,6 +35,8 @@ public class Main extends Application {
         bounds = Screen.getPrimary().getBounds();
         // Obtener el controlador y pasarle la referencia del root
         MainController controller = loader.getController();
+        String urlStr = AppConfig.getUrlServidor() + "/terminal/sincronizar/";
+        System.out.println(urlStr);
         controller.setRoot(root);
         Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight()-70);
         scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());
