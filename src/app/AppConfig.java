@@ -5,7 +5,7 @@ import org.orman.mapper.Model;
 import org.orman.mapper.ModelQuery;
 
 public class AppConfig {
-    private static final String DEFAULT_URL = "http://localhost:4000/api";
+    private static final String DEFAULT_URL = "http://10.0.38.71:4000/api";
 
     public static String getUrlServidor() {
         Configuracion config = Model.fetchSingle(ModelQuery.select().from(Configuracion.class).getQuery() , Configuracion.class);

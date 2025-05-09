@@ -1,6 +1,7 @@
 package controllers;
 
 import android.widget.Toast;
+import app.AppConfig;
 import app.Main;
 import components.toast.ToastController;
 import javafx.beans.property.ObjectProperty;
@@ -314,7 +315,7 @@ public class ListarRespaldosController implements Initializable {
     }
 
     public String requestTerminalPorIp(String ip) throws IOException {
-        String urlString = "http://localhost:4000/api/terminal/ip/" + ip;
+        String urlString = AppConfig.getUrlServidor() + "/terminal/ip/" + ip;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod("GET");
@@ -396,7 +397,7 @@ public class ListarRespaldosController implements Initializable {
                 }
             }
             //Código del request
-            String urlStr = "http://localhost:4000/api/terminal/sincronizar/" + terminalId;
+            String urlStr = AppConfig.getUrlServidor() + "/terminal/sincronizar/" + terminalId;
             HttpURLConnection conn = null;
             try {
                 URL url = new URL(urlStr);
