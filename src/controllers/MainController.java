@@ -15,7 +15,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
-import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -29,7 +29,6 @@ import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.List;
 import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
@@ -129,15 +128,21 @@ public class MainController implements Initializable {
         Dialog<String> dialog = new Dialog<>();
         dialog.setTitle("Configuración del Servidor");
 
+        HBox cabecera = new HBox();
+        cabecera.setAlignment(Pos.CENTER_LEFT);
+        Label lbl_titulo = new Label("Configuraciones");
+        lbl_titulo.setStyle("-fx-font-weight: bold; -fx-text-fill: white;-fx-font-size: 16px;-fx-padding: 5 0 5 5;");
+        cabecera.getChildren().add(lbl_titulo);
+        cabecera.setStyle("-fx-pref-height: 60; -fx-pref-width: 350; -fx-background-color:  #295A8C");
         Label label = new Label("URL del servidor:");
-        label.setStyle("-fx-font-weight: bold;");
+        label.setStyle("-fx-font-weight: bold;-fx-text-fill: #646464;");
         TextField urlField = new TextField(AppConfig.getUrlServidor());
-
-        VBox content = new VBox(10, label, urlField);
-        content.setStyle("-fx-padding: 10");
-        content.setPadding(new Insets(10));
+        urlField.setPromptText("http://10.0.38.71:4000/api");
+        VBox contenido = new VBox(label, urlField);
+        contenido.setStyle("-fx-font-size: 14px; -fx-padding: 5 15 25 15;");
+        VBox vb_raiz = new VBox(15, cabecera, contenido);
         dialog.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
-        dialog.getDialogPane().setContent(content);
+        dialog.getDialogPane().setContent(vb_raiz);
 
         ButtonType guardarButtonType = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
         dialog.getDialogPane().getButtonTypes().addAll(guardarButtonType, ButtonType.CANCEL);

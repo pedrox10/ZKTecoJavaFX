@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.lang.*?>
+<?import javafx.geometry.*?>
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+
+<AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="155.0" prefWidth="340.0" xmlns="http://javafx.com/javafx/8" xmlns:fx="http://javafx.com/fxml/1" fx:controller="controllers.AgregarTerminalController">
+   <children>
+      <VBox alignment="TOP_CENTER" spacing="15.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" prefHeight="60.0" style="-fx-background-color: #295A8C;">
+               <children>
+                  <Label fx:id="lbl_titulo" minHeight="50.0" prefHeight="50.0" style="-fx-text-fill: #FFFFFF;" styleClass="card-subtitle" text="Configuraciones" textFill="WHITE">
+                     <HBox.margin>
+                        <Insets left="5.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
+            <VBox spacing="25.0">
+               <children>
+                  <VBox prefHeight="100.0" prefWidth="100.0">
+                     <children>
+                        <Label style="-fx-font-weight: bold;" text="URL Servidor: " />
+                        <TextField fx:id="tf_url" prefHeight="34.0" prefWidth="230.0" promptText="http://10.0.38.71:4000/api" />
+                     </children>
+                  </VBox>
+               </children>
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </VBox>
+         </children>
+      </VBox>
+   </children>
+</AnchorPane>
