@@ -25,13 +25,14 @@
                           <children>
                               <Button fx:id="btn_agregar" cacheShape="false" centerShape="false" contentDisplay="TEXT_ONLY" mnemonicParsing="false" onAction="#agregarTerminal" scaleShape="false" styleClass="icon-button" textFill="WHITE">
                               </Button>
+                        <Button fx:id="btn_config" cacheShape="false" centerShape="false" contentDisplay="TEXT_ONLY" layoutX="125.0" layoutY="10.0" mnemonicParsing="false" onAction="#mostrarDialogoConfig" scaleShape="false" styleClass="icon-button" textFill="WHITE" />
                           </children>
                       </HBox>
                   </items>
               </ToolBar>
               <VBox spacing="10" styleClass="principal">
                  <children>
-                     <VBox>
+                     <VBox focusTraversable="true">
                         <children>
                             <Label fx:id="labelTitulo" styleClass="titulo" text="Lista de Terminales" />
                             <Line endX="80" endY="0" startX="0" startY="0" stroke="#0E4B8E" strokeWidth="3" styleClass="subrayado" />

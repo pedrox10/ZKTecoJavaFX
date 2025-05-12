@@ -1,7 +1,9 @@
 package controllers;
 
+import app.AppConfig;
 import app.Main;
 import components.terminal.TerminalController;
+import components.toast.ToastController;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -13,6 +15,7 @@ import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
+import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -27,6 +30,7 @@ import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 import java.util.regex.Pattern;
 
@@ -38,6 +42,8 @@ public class MainController implements Initializable {
     private FlowPane fp_terminales;
     @FXML
     private Button btn_agregar;
+    @FXML
+    private Button btn_config;
     ObjectProperty<StackPane> op_root = new SimpleObjectProperty<StackPane>();
     StackPane root;
     ObservableList<Terminal> terminales = FXCollections.observableArrayList();
@@ -56,7 +62,9 @@ public class MainController implements Initializable {
                     for (Terminal terminal : terminales) {
                         agregarTerminalUI(terminal);
                     }
-
+                    Tooltip tt_config = new Tooltip("Configurar Servidor");
+                    btn_config.setTooltip(tt_config);
+                    btn_config.setText("\ue8b8");
                 }
             }
         });
@@ -103,6 +111,8 @@ public class MainController implements Initializable {
                 terminal.puerto = Integer.parseInt(puerto);
                 terminal.insert();
                 agregarTerminalUI(terminal);
+                ToastController toast = ToastController.createToast("success", "¡Listo!", "Terminal agregado correctamente");
+                toast.show(this.root);
             }
         });
         dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
@@ -112,6 +122,43 @@ public class MainController implements Initializable {
                 pane_mascara.setVisible(false);
             }
         });
+    }
+
+    @FXML
+    private void mostrarDialogoConfig() {
+        Dialog<String> dialog = new Dialog<>();
+        dialog.setTitle("Configuración del Servidor");
+
+        Label label = new Label("URL del servidor:");
+        label.setStyle("-fx-font-weight: bold;");
+        TextField urlField = new TextField(AppConfig.getUrlServidor());
+
+        VBox content = new VBox(10, label, urlField);
+        content.setStyle("-fx-padding: 10");
+        content.setPadding(new Insets(10));
+        dialog.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        dialog.getDialogPane().setContent(content);
+
+        ButtonType guardarButtonType = new ButtonType("Guardar", ButtonBar.ButtonData.OK_DONE);
+        dialog.getDialogPane().getButtonTypes().addAll(guardarButtonType, ButtonType.CANCEL);
+
+        dialog.setResultConverter(dialogButton -> {
+            if (dialogButton == guardarButtonType) {
+                return urlField.getText();
+            }
+            return null;
+        });
+        pane_mascara.setVisible(true);
+        pane_mascara.toFront();
+        Optional<String> result = dialog.showAndWait();
+
+        result.ifPresent(nuevaUrl -> {
+            AppConfig.actualizarUrlServidor(nuevaUrl.trim());
+            ToastController toast = ToastController.createToast("success", "¡Listo!", "URL actualizada correctamente");
+            toast.show(root);
+        });
+        pane_mascara.setVisible(false);
+        pane_mascara.toBack();
     }
 
     public String validarDatos(String nombre, String ip, String puertoStr) {
