@@ -211,6 +211,7 @@ public class ListarRespaldosController implements Initializable {
                     usuariosActuales.add(new Usuario(id, nombre));
                 }
                 tv_actuales.getItems().setAll(usuariosActuales);
+                System.out.println(usuariosActuales);
                 lbl_nombre_actual.setText(terminalJSONObject.getString("nombre"));
                 lbl_num_actuales.setText(usuariosActuales.size() + " funcionarios");
 
