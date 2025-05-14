@@ -1,6 +1,5 @@
 package controllers;
 
-import android.widget.Toast;
 import app.AppConfig;
 import app.Main;
 import components.toast.ToastController;
@@ -30,7 +29,6 @@ import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Paths;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;

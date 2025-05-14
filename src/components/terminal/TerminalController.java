@@ -295,7 +295,6 @@ public class TerminalController implements Initializable {
                                 terminal.respaldos.refreshList();
                             }
                         });
-
                     }
                 } catch (Exception e) {
                     e.printStackTrace();

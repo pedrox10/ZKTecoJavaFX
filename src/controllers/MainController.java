@@ -135,7 +135,7 @@ public class MainController implements Initializable {
         cabecera.getChildren().add(lbl_titulo);
         cabecera.setStyle("-fx-pref-height: 60; -fx-pref-width: 350; -fx-background-color:  #295A8C");
         Label label = new Label("URL del servidor:");
-        label.setStyle("-fx-font-weight: bold;-fx-text-fill: #646464;");
+        label.setStyle("-fx-font-weight: bold;-fx-text-fill: #222;");
         TextField urlField = new TextField(AppConfig.getUrlServidor());
         urlField.setPromptText("http://10.0.38.71:4000/api");
         VBox contenido = new VBox(label, urlField);
