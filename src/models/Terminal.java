@@ -14,6 +14,7 @@ public class Terminal extends Model<Terminal> {
     public String nombre;
     public int puerto;
     public String numSerie;
+    public String modelo;
     public int totalMarcaciones;
     @OneToMany(toType = Respaldo.class, onField = "terminal")
     public EntityList<Terminal, Respaldo> respaldos = new EntityList(Terminal.class, Respaldo.class, this);
@@ -48,6 +49,14 @@ public class Terminal extends Model<Terminal> {
 
     public void setNumSerie(String numSerie) {
         this.numSerie = numSerie;
+    }
+
+    public String getModelo() {
+        return modelo;
+    }
+
+    public void setModelo(String modelo) {
+        this.modelo = modelo;
     }
 
     public int getTotalMarcaciones() {

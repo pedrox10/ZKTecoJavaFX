@@ -270,6 +270,7 @@ public class ListarRespaldosController implements Initializable {
         } else {
             JSONObject infoJSON = new JSONObject();
             infoJSON.put("numero_serie", backupJSONObject.getString("numero_serie"));
+            infoJSON.put("modelo", backupJSONObject.getString("modelo"));
             infoJSON.put("hora_terminal", backupJSONObject.getString("hora_terminal"));
             infoJSON.put("total_marcaciones", backupJSONObject.getInt("total_marcaciones"));
             infoJSON.put("marcaciones", backupJSONObject.getJSONArray("marcaciones"));
@@ -344,6 +345,7 @@ public class ListarRespaldosController implements Initializable {
         JSONObject originalObj = new JSONObject(jsonOriginal);
         JSONArray marcaciones = originalObj.getJSONArray("marcaciones");
         String numeroSerie = originalObj.getString("numero_serie");
+        String modelo = originalObj.getString("modelo");
         int totalMarcaciones = originalObj.getInt("total_marcaciones");
         String horaTerminal = originalObj.getString("hora_terminal");
         // Filtrar marcaciones
@@ -358,6 +360,7 @@ public class ListarRespaldosController implements Initializable {
         // Crear resultado
         JSONObject resultado = new JSONObject();
         resultado.put("numero_serie", numeroSerie);
+        resultado.put("modelo", modelo);
         resultado.put("hora_terminal", horaTerminal);
         resultado.put("total_marcaciones", totalMarcaciones);
         resultado.put("marcaciones", filtradas);
@@ -438,7 +441,6 @@ public class ListarRespaldosController implements Initializable {
                     conn.disconnect();
                 }
             }
-
         } else {
             JSONObject errorJson = new JSONObject();
             errorJson.put("mensaje", "No se puede sincronizar");
@@ -471,7 +473,6 @@ public class ListarRespaldosController implements Initializable {
                     cerrarDialog(null);
                     toast = ToastController.createToast("success", "Sincronización", resumen);
                     toast.show(mc.root);
-
                     break;
                 case 500:
                     toast = ToastController.createToast("error", respuesta.optString("mensaje", "¡Error!"), respuesta.optString("detalle", "Sin detalles"));

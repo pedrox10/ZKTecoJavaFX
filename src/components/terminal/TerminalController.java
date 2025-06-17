@@ -268,6 +268,7 @@ public class TerminalController implements Initializable {
                     jsonObject.put("usuarios", usuariosArray);
                     jsonObject.put("marcaciones", marcacionesArray);
                     jsonObject.put("numero_serie", respuestaJson.getString("numero_serie"));
+                    jsonObject.put("modelo", respuestaJson.getString("modelo"));
                     jsonObject.put("hora_terminal", respuestaJson.getString("hora_terminal"));
                     jsonObject.put("total_marcaciones", respuestaJson.getInt("total_marcaciones"));
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
