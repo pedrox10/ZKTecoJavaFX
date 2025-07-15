@@ -3,6 +3,7 @@ package controllers;
 import app.AppConfig;
 import app.Main;
 import components.toast.ToastController;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
@@ -13,6 +14,9 @@ import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
@@ -25,16 +29,24 @@ import org.orman.mapper.Model;
 import org.orman.mapper.ModelQuery;
 import org.orman.sql.C;
 
+import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.Transferable;
 import java.io.*;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.List;
 
 public class ListarRespaldosController implements Initializable {
 
@@ -118,23 +130,45 @@ public class ListarRespaldosController implements Initializable {
                 }
             }
         });
-        tv_respaldos.setRowFactory(tv -> new TableRow<Respaldo>() {
-            @Override
-            protected void updateItem(Respaldo item, boolean empty) {
-                super.updateItem(item, empty);
-                if (item == null || empty) {
-                    setDisable(false);
-                    setStyle(""); // Restablece el estilo
+        tv_respaldos.setRowFactory(tv -> {
+            TableRow<Respaldo> row = new TableRow<>();
+            // Crear el menú contextual
+            ContextMenu contextMenu = new ContextMenu();
+            MenuItem copiarArchivoItem = new MenuItem("Copiar archivo");
+            copiarArchivoItem.setOnAction(e -> {
+                Respaldo respaldo = row.getItem();
+                if (respaldo != null) {
+                    copiarArchivoRespaldo(respaldo);
+                }
+            });
+            contextMenu.getItems().addAll(copiarArchivoItem);
+            // Mostrar solo si hay un ítem válido y no está deshabilitado
+            row.contextMenuProperty().bind(
+                    Bindings.when(
+                            row.emptyProperty()
+                                    .or(row.itemProperty().isNull())
+                                    .or(Bindings.createBooleanBinding(() -> {
+                                        Respaldo r = row.getItem();
+                                        return r != null && r.getFechaSincronizacion() != null;
+                                    }, row.itemProperty()))
+                    ).then((ContextMenu) null).otherwise(contextMenu)
+            );
+            // Opcional: mantener lógica visual actual
+            row.itemProperty().addListener((obs, oldItem, newItem) -> {
+                if (newItem == null) {
+                    row.setDisable(false);
+                    row.setStyle("");
                 } else {
-                    if (item.fechaSincronizacion != null) {
-                        setDisable(true);
-                        setStyle("-fx-opacity: 0.65;"); // Aplica un estilo visual para indicar que está deshabilitado
+                    if (newItem.getFechaSincronizacion() != null) {
+                        row.setDisable(true);
+                        row.setStyle("-fx-opacity: 0.65;");
                     } else {
-                        setDisable(false);
-                        setStyle("-fx-opacity: 1;"); // Restablece si no está sincronizado
+                        row.setDisable(false);
+                        row.setStyle("-fx-opacity: 1;");
                     }
                 }
-            }
+            });
+            return row;
         });
         tv_respaldos.getSelectionModel().selectedItemProperty().addListener(new ChangeListener<Respaldo>() {
             @Override
@@ -502,5 +536,35 @@ public class ListarRespaldosController implements Initializable {
 
     public void actualizarRespaldo(Respaldo respaldo) {
         respaldos.set(indiceDe(respaldo), respaldo);
+    }
+
+    private void copiarArchivoRespaldo(Respaldo respaldo) {
+        String basePath = Paths.get("").toAbsolutePath().toString();
+        String relativePath = "Backups";
+        String fullPath = basePath + File.separator + relativePath + File.separator + respaldoActual.nombre;
+        File file = new File(fullPath);
+        Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+        clipboard.setContents(new FileTransferable(file), null);
+    }
+
+    // Clase para copiar archivo al portapapeles (solo uno a la vez)
+    static class FileTransferable implements Transferable {
+        private final List<File> files;
+
+        public FileTransferable(File file) {
+            this.files = Collections.singletonList(file);
+        }
+        @Override
+        public DataFlavor[] getTransferDataFlavors() {
+            return new DataFlavor[]{DataFlavor.javaFileListFlavor};
+        }
+        @Override
+        public boolean isDataFlavorSupported(DataFlavor flavor) {
+            return flavor.equals(DataFlavor.javaFileListFlavor);
+        }
+        @Override
+        public Object getTransferData(DataFlavor flavor) {
+            return files;
+        }
     }
 }

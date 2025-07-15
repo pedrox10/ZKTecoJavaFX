@@ -274,7 +274,7 @@ public class TerminalController implements Initializable {
                     SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
                     Date fechaRespaldo = formatter.parse(respuestaJson.getString("hora_terminal"));
                     String nombreTerminal = terminal.nombre.replaceAll("\\s+", "_");
-                    String nombreArchivo = nombreTerminal + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaRespaldo) + ".json";
+                    String nombreArchivo = nombreTerminal + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaRespaldo) + ".gams";
                     String basePath = Paths.get("").toAbsolutePath().toString();
                     String relativePath = "Backups";
                     String fullPath = basePath + File.separator + relativePath + File.separator + nombreArchivo;
@@ -285,6 +285,11 @@ public class TerminalController implements Initializable {
                     try (FileWriter file = new FileWriter(fullPath)) {
                         file.write(jsonObject.toString(4)); // JSON con indentación
                         System.out.println("Archivo JSON generado en: " + fullPath);
+                        File archivo = new File(fullPath);
+                        boolean readonly = archivo.setReadOnly();
+                        if (!readonly) {
+                            System.out.println("⚠️ No se pudo marcar el archivo como solo lectura.");
+                        }
                         Respaldo respaldo = new Respaldo();
                         respaldo.fecha = fechaRespaldo;
                         respaldo.nombre = nombreArchivo;  // Guardar solo el nombre del archivo
