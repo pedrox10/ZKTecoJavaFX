@@ -14,3 +14,8 @@
 /.gradle/
 /build/
 /target/
+
+# Carpetas y Bd
+/Backups/
+/scriptpy/envpy/
+horarios.db
