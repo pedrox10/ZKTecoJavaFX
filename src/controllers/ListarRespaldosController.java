@@ -3,6 +3,7 @@ package controllers;
 import app.AppConfig;
 import app.Main;
 import components.toast.ToastController;
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
@@ -18,6 +19,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
+import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import models.Respaldo;
@@ -51,6 +56,8 @@ import java.util.List;
 public class ListarRespaldosController implements Initializable {
 
     @FXML
+    public AnchorPane ap_root;
+    public StackPane sp_root;
     public VBox vb_primer_paso;
     public VBox vb_segundo_paso;
     public TableView tv_respaldos;
@@ -212,6 +219,12 @@ public class ListarRespaldosController implements Initializable {
         tv_respaldos.setItems(respaldos);
         lbl_pri_nombre.setText(terminal.nombre);
         lbl_pri_ip.setText(terminal.ip);
+        Platform.runLater(new Runnable() {
+            @Override
+            public void run() {
+                ap_root.requestFocus();
+            }
+        });
     }
 
     @FXML
