@@ -746,6 +746,16 @@
 	-fx-font-size: 20px;
 }
 
+.button-small {
+	-fx-background-color: transparent;
+	-fx-pref-height: 20;
+	-fx-padding: 0;
+	-fx-cursor: hand;
+}
+.button-small .text {
+	-fx-font-size: 14px;
+}
+
 .principal {
 	-fx-background-color: white;
 	-fx-padding: 10 10 10 10;

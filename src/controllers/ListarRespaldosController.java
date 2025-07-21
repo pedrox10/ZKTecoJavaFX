@@ -69,6 +69,7 @@ public class ListarRespaldosController implements Initializable {
     public Label ic_fecha;
     public Label ic_archivo;
     public Label ic_sincronizado;
+    public Label ic_cargar;
     public Button btn_siguiente;
 
     public TableView tv_nuevos;
@@ -197,6 +198,8 @@ public class ListarRespaldosController implements Initializable {
         ic_archivo.setStyle("-fx-text-fill: #a295c3");
         ic_sincronizado.setText("\ue915");
         ic_sincronizado.setStyle("-fx-text-fill: #ec3939");
+        ic_cargar.setText("\ue2c7");
+        ic_cargar.setStyle("-fx-text-fill: #f5d94a");
         btn_siguiente.disableProperty().bind(opRespaldo.isNull());
 
         tc_nuevos_nombre.setCellValueFactory(new PropertyValueFactory<>("nombre"));
@@ -446,7 +449,7 @@ public class ListarRespaldosController implements Initializable {
                 }
             }
             //Código del request
-            String urlStr = AppConfig.getUrlServidor() + "/terminal/sincronizar/" + terminalId;
+            String urlStr = AppConfig.getUrlServidor() + "/terminal/sincronizar-post/" + terminalId;
             HttpURLConnection conn = null;
             try {
                 URL url = new URL(urlStr);

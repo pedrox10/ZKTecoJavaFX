@@ -35,8 +35,6 @@ public class Main extends Application {
         bounds = Screen.getPrimary().getBounds();
         // Obtener el controlador y pasarle la referencia del root
         MainController controller = loader.getController();
-        String urlStr = AppConfig.getUrlServidor() + "/terminal/sincronizar/";
-        System.out.println(urlStr);
         controller.setRoot(root);
         Scene scene = new Scene(root, bounds.getWidth(), bounds.getHeight()-70);
         scene.getStylesheets().add(getClass().getResource("/styles/global.css").toExternalForm());

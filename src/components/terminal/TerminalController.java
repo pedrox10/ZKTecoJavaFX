@@ -291,7 +291,7 @@ public class TerminalController implements Initializable {
                         File archivo = new File(fullPath);
                         boolean readonly = archivo.setReadOnly();
                         if (!readonly) {
-                            System.out.println("⚠️ No se pudo marcar el archivo como solo lectura.");
+                            System.out.println("No se pudo marcar el archivo como solo lectura.");
                         }
                         Respaldo respaldo = new Respaldo();
                         respaldo.fecha = fechaRespaldo;
