@@ -24,12 +24,14 @@ import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import models.Respaldo;
 import models.Terminal;
 import models.Usuario;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.orman.mapper.F;
 import org.orman.mapper.Model;
 import org.orman.mapper.ModelQuery;
 import org.orman.sql.C;
@@ -45,6 +47,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -142,14 +145,37 @@ public class ListarRespaldosController implements Initializable {
             TableRow<Respaldo> row = new TableRow<>();
             // Crear el menú contextual
             ContextMenu contextMenu = new ContextMenu();
-            MenuItem copiarArchivoItem = new MenuItem("Copiar archivo");
+            MenuItem copiarArchivoItem = new MenuItem(" Copiar archivo");
+            Label iconCopiar = new Label("\ue24d"); // Código unicode del ícono (archivo)
+            iconCopiar.setStyle("-fx-text-fill: #a295c3");
+            iconCopiar.getStyleClass().add("text");
+
+            Label iconWrapperCopiar = new Label();
+            iconWrapperCopiar.getStyleClass().add("icon");
+            iconWrapperCopiar.setGraphic(iconCopiar);
+            copiarArchivoItem.setGraphic(iconWrapperCopiar);
             copiarArchivoItem.setOnAction(e -> {
                 Respaldo respaldo = row.getItem();
                 if (respaldo != null) {
                     copiarArchivoRespaldo(respaldo);
                 }
             });
-            contextMenu.getItems().addAll(copiarArchivoItem);
+            MenuItem eliminarItem = new MenuItem(" Eliminar respaldo");
+            Label iconEliminar = new Label("\ue872"); // Código unicode del ícono (eliminar)
+            iconEliminar.setStyle("-fx-text-fill: #ea5451;");
+            iconEliminar.getStyleClass().add("text");
+
+            Label iconWrapperEliminar = new Label();
+            iconWrapperEliminar.getStyleClass().add("icon");
+            iconWrapperEliminar.setGraphic(iconEliminar);
+            eliminarItem.setGraphic(iconWrapperEliminar);
+            eliminarItem.setOnAction(e -> {
+                Respaldo respaldo = row.getItem();
+                if (respaldo != null) {
+                    eliminarRespaldo(respaldo);
+                }
+            });
+            contextMenu.getItems().addAll(copiarArchivoItem, eliminarItem);
             // Mostrar solo si hay un ítem válido y no está deshabilitado
             row.contextMenuProperty().bind(
                     Bindings.when(
@@ -561,6 +587,8 @@ public class ListarRespaldosController implements Initializable {
         File file = new File(fullPath);
         Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
         clipboard.setContents(new FileTransferable(file), null);
+        ToastController toast = ToastController.createToast("success", "Listo!", "Archivo copiado al portapapeles.");
+        toast.show(mc.root);
     }
 
     // Clase para copiar archivo al portapapeles (solo uno a la vez)
@@ -581,6 +609,100 @@ public class ListarRespaldosController implements Initializable {
         @Override
         public Object getTransferData(DataFlavor flavor) {
             return files;
+        }
+    }
+
+    private void eliminarRespaldo(Respaldo respaldo) {
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        confirmacion.setTitle("Confirmación");
+        confirmacion.setHeaderText("¿Deseas eliminar este respaldo?");
+        Label label = new Label("Se eliminará tanto el respaldo como el archivo .gams del disco.");
+        label.setWrapText(true);
+        label.setStyle("-fx-padding: 10;");
+        confirmacion.getDialogPane().setContent(label);
+        Optional<ButtonType> result = confirmacion.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                respaldo.delete();
+                String basePath = Paths.get("").toAbsolutePath().toString();
+                String relativePath = "Backups";
+                String fullPath = basePath + File.separator + relativePath + File.separator + respaldo.getNombre();
+                File archivo = new File(fullPath);
+                if (archivo.exists()) {
+                    archivo.delete();
+                }
+                respaldos.remove(respaldo);
+                tv_respaldos.refresh();
+                ToastController.createToast("success", "Listo!", "El respaldo fue eliminado exitosamente.").show(mc.root);
+            } catch (Exception e) {
+                e.printStackTrace();
+                ToastController.createToast("error", "Error", "No se pudo eliminar el respaldo.").show(mc.root);
+            }
+        }
+    }
+
+    @FXML
+    public void cargarArchivoExterno() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Seleccionar archivo de respaldo");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Archivos de respaldo (*.gams)", "*.gams")
+        );
+        File archivoSeleccionado = fileChooser.showOpenDialog(tv_respaldos.getScene().getWindow());
+        if (archivoSeleccionado != null) {
+            try (BufferedReader reader = new BufferedReader(new FileReader(archivoSeleccionado))) {
+                StringBuilder sb = new StringBuilder();
+                String linea;
+                while ((linea = reader.readLine()) != null) {
+                    sb.append(linea);
+                }
+                JSONObject json = new JSONObject(sb.toString());
+                // Obtener la hora del respaldo
+                String horaStr = json.getString("hora_terminal");
+                SimpleDateFormat formatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
+                Date fechaRespaldo = formatter.parse(horaStr);
+                // Ruta destino: Backups/nombre_archivo.gams
+                String nombreTerminal = terminal.nombre.replaceAll("\\s+", "_");
+                String nombreArchivo = nombreTerminal + "_" + new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss").format(fechaRespaldo) + ".gams";
+                String basePath = Paths.get("").toAbsolutePath().toString();
+                String relativePath = "Backups";
+                String rutaDuplicado = basePath + File.separator + relativePath + File.separator + nombreArchivo;
+                String fullPath = basePath + File.separator + relativePath + File.separator + archivoSeleccionado.getName();
+                File backupFolder = new File(basePath, relativePath);
+                if (!backupFolder.exists()) {
+                    backupFolder.mkdirs();
+                }
+                File archivoDestino = new File(fullPath);
+                File archivoDuplicado = new File(rutaDuplicado);
+                if (archivoDuplicado.exists()) {
+                    mostrarError("Ya se cargo un respaldo con la misma fecha.");
+                    return;
+                }
+                if (archivoDestino.exists()) {
+                    mostrarError("El archivo ya fue cargado en otro terminal.");
+                    return;
+                }
+                // Copiar archivo al directorio Backups
+                Files.copy(archivoSeleccionado.toPath(), archivoDestino.toPath());
+                // Crear objeto respaldo
+                Respaldo nuevo = new Respaldo();
+                nuevo.fecha = fechaRespaldo;
+                nuevo.nombre = archivoSeleccionado.getName();
+                nuevo.terminal = terminal;
+                nuevo.insert();
+                // Insertar en lista y ordenar
+                respaldos.add(nuevo);
+                respaldos.sort((a, b) -> b.fecha.compareTo(a.fecha));
+                tv_respaldos.refresh();
+                tv_respaldos.getSelectionModel().select(nuevo);
+                opRespaldo.setValue(nuevo);
+                ToastController toast = ToastController.createToast("success", "Listo!", "Copia de respaldo agregada");
+                toast.show(mc.root);
+            } catch (Exception e) {
+                mostrarError("No se pudo cargar el archivo seleccionado.\n" + e.getMessage());
+                e.printStackTrace();
+            }
         }
     }
 }
