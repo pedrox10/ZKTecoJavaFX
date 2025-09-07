@@ -17,10 +17,10 @@ def serialize_datetime(obj):
     raise TypeError("Type not serializable")
 try:
     conn = zk.connect()
+    current_time = serialize_datetime(conn.get_time())
     attendance_records = conn.get_attendance()
     serial_number = conn.get_serialnumber()
     modelo = conn.get_device_name()
-    current_time = serialize_datetime(conn.get_time())
     marcaciones = []
     if fecha_desde == "":
         marcaciones = attendance_records
