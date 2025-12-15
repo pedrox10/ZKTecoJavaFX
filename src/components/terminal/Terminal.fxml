@@ -58,6 +58,13 @@
                   <String fx:value="hand" />
                   <String fx:value="icon" />
                </styleClass></Label>
+            <Region layoutX="10.0" layoutY="34.0" minHeight="10.0" />
+            <Label fx:id="lbl_adm_usuarios" alignment="CENTER" contentDisplay="CENTER" layoutX="11.0" layoutY="67.0" onMouseClicked="#admFuncionarios" style="-fx-text-fill: -swatch-dark-grey;" text="E">
+               <styleClass>
+                  <String fx:value="hand" />
+                  <String fx:value="icon" />
+               </styleClass>
+            </Label>
            </children>
          <StackPane.margin>
             <Insets />

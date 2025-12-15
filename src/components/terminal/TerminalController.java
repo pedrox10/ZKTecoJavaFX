@@ -2,6 +2,7 @@ package components.terminal;
 
 import app.Main;
 import components.toast.ToastController;
+import controllers.AdmFuncionariosController;
 import controllers.AgregarTerminalController;
 import controllers.ListarRespaldosController;
 import controllers.MainController;
@@ -49,6 +50,8 @@ public class TerminalController implements Initializable {
     @FXML
     private Label lbl_editar;
     @FXML
+    private Label lbl_adm_usuarios;
+    @FXML
     private VBox vb_cabecera;
     @FXML
     private Label lbl_nombre;
@@ -77,6 +80,9 @@ public class TerminalController implements Initializable {
         lbl_editar.setText("\ue3c9");
         Tooltip tt_editar = new Tooltip("Editar Terminal");
         lbl_editar.setTooltip(tt_editar);
+        lbl_adm_usuarios.setText("\ue7ef");
+        Tooltip tt_adm_usuarios = new Tooltip("Adm. Funcioanrios");
+        lbl_adm_usuarios.setTooltip(tt_adm_usuarios);
         Tooltip tt_eliminar = new Tooltip("Eliminar Terminal");
         tt_eliminar.setStyle("-fx-font-size: 12px;");
         lbl_cerrar.setTooltip(tt_eliminar);
@@ -158,6 +164,31 @@ public class TerminalController implements Initializable {
                 mc.editarTerminalUI(terminal);
             }
         });
+        dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
+            @Override
+            public void handle(DialogEvent event) {
+                mc.pane_mascara.toBack();
+                mc.pane_mascara.setVisible(false);
+            }
+        });
+    }
+
+    @FXML
+    private void admFuncionarios() throws IOException{
+        Dialog dialogo = new Dialog();
+        dialogo.setTitle("Administrar Funcionarios");
+        FXMLLoader loader = new FXMLLoader(getClass().getResource("/views/AdmFuncionarios.fxml"));
+        Parent terminalNode = loader.load();
+        //Obtener el controlador y pasarle los datos
+        AdmFuncionariosController afc = loader.getController();
+        afc.initData(terminal);
+        AnchorPane root = (AnchorPane) loader.getRoot();
+        dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        dialogo.getDialogPane().setContent(root);
+        dialogo.show();
+        mc.pane_mascara.setVisible(true);
+        mc.pane_mascara.toFront();
+
         dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
             @Override
             public void handle(DialogEvent event) {
