@@ -185,17 +185,18 @@ public class TerminalController implements Initializable {
         AnchorPane root = (AnchorPane) loader.getRoot();
         dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
         dialogo.getDialogPane().setContent(root);
-        dialogo.show();
-        mc.pane_mascara.setVisible(true);
-        mc.pane_mascara.toFront();
-
-        dialogo.setOnCloseRequest(new EventHandler<DialogEvent>() {
+        Window window = dialogo.getDialogPane().getScene().getWindow();
+        window.setOnCloseRequest(new EventHandler<WindowEvent>() {
             @Override
-            public void handle(DialogEvent event) {
+            public void handle(WindowEvent event) {
+                dialogo.close();
                 mc.pane_mascara.toBack();
                 mc.pane_mascara.setVisible(false);
             }
         });
+        dialogo.show();
+        mc.pane_mascara.setVisible(true);
+        mc.pane_mascara.toFront();
     }
 
     @FXML

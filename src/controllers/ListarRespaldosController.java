@@ -390,7 +390,7 @@ public class ListarRespaldosController implements Initializable {
         }
     }
 
-    public String requestTerminalPorIp(String ip) throws IOException {
+    public StringrequestTerminalPorIp(String ip) throws IOException {
         String urlString = AppConfig.getUrlServidor() + "/terminal/ip/" + ip;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
