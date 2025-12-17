@@ -38,30 +38,19 @@
                   <VBox>
                      <children>
                         <Label text="Buscar Funcionario" />
-                        <TextField minWidth="250.0" />
+                        <TextField fx:id="tf_busqueda" minWidth="250.0" />
                      </children>
                   </VBox>
-                  <Button mnemonicParsing="false" text="Button" />
-                  <Button mnemonicParsing="false" text="Button" />
+                  <Button fx:id="btn_eliminar" mnemonicParsing="false" text="Eliminar" />
+                  <Button fx:id="btn_respaldar" mnemonicParsing="false" text="Respaldar" />
                </children>
             </HBox>
-            <TableView fx:id="tv_respaldos" prefHeight="490.0">
+            <TableView fx:id="tv_funcionarios" prefHeight="490.0">
                <columns>
-                  <TableColumn fx:id="tc_fecha" prefWidth="175.0" sortable="false" text="#">
-                     <graphic>
-                        <Label fx:id="ic_fecha" styleClass="icon" text="X" />
-                     </graphic>
-                  </TableColumn>
-                  <TableColumn fx:id="tc_nombre" prefWidth="340.0" sortable="false" text="Nombre">
-                     <graphic>
-                        <Label fx:id="ic_archivo" styleClass="icon" text="X" />
-                     </graphic>
-                  </TableColumn>
-                  <TableColumn fx:id="tc_fecha_sincronizacion" minWidth="0.0" prefWidth="175.0" sortable="false" text="CI">
-                     <graphic>
-                        <Label fx:id="ic_sincronizado" styleClass="icon" text="X" />
-                     </graphic>
-                  </TableColumn>
+                  <TableColumn fx:id="tc_check" prefWidth="53.0" sortable="false" />
+                  <TableColumn fx:id="tc_num" prefWidth="53.0" sortable="false" text="#" />
+                  <TableColumn fx:id="tc_nombre" prefWidth="350.0" sortable="false" text="Nombre" />
+                  <TableColumn fx:id="tc_ci" minWidth="0.0" prefWidth="100.0" sortable="false" text="CI" />
                </columns>
                <padding>
                   <Insets left="5.0" right="5.0" />

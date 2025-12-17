@@ -108,7 +108,6 @@ public class ListarRespaldosController implements Initializable {
     @Override
     public void initialize(URL event, ResourceBundle rb) {
         tc_fecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
-        tc_fecha.setCellValueFactory(new PropertyValueFactory<>("fecha"));
         tc_fecha.setCellFactory(column -> new TableCell<Respaldo, Date>() {
             @Override
             protected void updateItem(Date item, boolean empty) {
@@ -390,7 +389,7 @@ public class ListarRespaldosController implements Initializable {
         }
     }
 
-    public StringrequestTerminalPorIp(String ip) throws IOException {
+    public String requestTerminalPorIp(String ip) throws IOException {
         String urlString = AppConfig.getUrlServidor() + "/terminal/ip/" + ip;
         URL url = new URL(urlString);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();

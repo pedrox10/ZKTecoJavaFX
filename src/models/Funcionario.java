@@ -11,6 +11,36 @@ public class Funcionario {
     private int ci;
     private String nombre;
 
+    public Funcionario(int uid, int ci, String nombre) {
+        this.uid = uid;
+        this.ci = ci;
+        this.nombre = nombre;
+    }
+
+    public int getUid() {
+        return uid;
+    }
+
+    public void setUid(int uid) {
+        this.uid = uid;
+    }
+
+    public int getCi() {
+        return ci;
+    }
+
+    public void setCi(int ci) {
+        this.ci = ci;
+    }
+
+    public String getNombre() {
+        return nombre;
+    }
+
+    public void setNombre(String nombre) {
+        this.nombre = nombre;
+    }
+
     public BooleanProperty seleccionadoProperty() {
         return seleccionado;
     }
