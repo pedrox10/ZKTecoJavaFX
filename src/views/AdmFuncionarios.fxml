@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
+<?import javafx.scene.text.*?>
 <?import java.lang.*?>
 <?import javafx.geometry.*?>
 <?import javafx.scene.control.*?>
@@ -37,41 +38,89 @@
                <children>
                   <VBox>
                      <children>
-                        <Label text="Buscar Funcionario" />
-                        <TextField fx:id="tf_busqueda" minWidth="250.0" />
+                        <HBox>
+                           <children>
+                              <Label styleClass="label-titulo" text="Buscar Funcionario" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Label fx:id="lbl_filtrados" layoutX="10.0" layoutY="10.0" style="-: ;" styleClass="label-titulo" text="12" />
+                           </children>
+                        </HBox>
+                        <TextField fx:id="tf_busqueda" minWidth="250.0" style="-fx-padding: 0.75em 0.5em 0.75em 0.5em;" />
                      </children>
                   </VBox>
-                  <Button fx:id="btn_eliminar" mnemonicParsing="false" text="Eliminar" />
-                  <Button fx:id="btn_respaldar" mnemonicParsing="false" text="Respaldar" />
+                  <VBox>
+                     <children>
+                        <HBox>
+                           <children>
+                              <Label styleClass="label-secundario" text="Seleccionados: " />
+                              <Label fx:id="lbl_seleccionados" layoutX="10.0" layoutY="10.0" styleClass="label-secundario" />
+                           </children>
+                        </HBox>
+                        <HBox spacing="5.0">
+                           <children>
+                              <Button fx:id="btn_eliminar" mnemonicParsing="false" styleClass="rojo" text="Eliminar">
+                                 <graphic>
+                                    <Label fx:id="icon_eliminar" styleClass="icon" text="x" />
+                                 </graphic>
+                              </Button>
+                              <Button fx:id="btn_respaldar" mnemonicParsing="false" text="Respaldar">
+                                 <styleClass>
+                                    <String fx:value="azul" />
+                                    <String fx:value="icon-left" />
+                                 </styleClass>
+                                 <graphic>
+                                    <Label fx:id="icon_respaldar" styleClass="icon" text="x" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+                  <Separator orientation="VERTICAL" />
+                  <Button fx:id="btn_cargar" layoutX="365.0" layoutY="27.0" mnemonicParsing="false" text="Cargar Respaldo">
+                     <graphic>
+                        <Label fx:id="icon_cargar" styleClass="icon" text="x" />
+                     </graphic>
+                     <styleClass>
+                        <String fx:value="icon-left" />
+                        <String fx:value="verde" />
+                     </styleClass>
+                  </Button>
                </children>
             </HBox>
             <TableView fx:id="tv_funcionarios" prefHeight="490.0">
                <columns>
-                  <TableColumn fx:id="tc_check" prefWidth="53.0" sortable="false" />
-                  <TableColumn fx:id="tc_num" prefWidth="53.0" sortable="false" text="#" />
-                  <TableColumn fx:id="tc_nombre" prefWidth="350.0" sortable="false" text="Nombre" />
-                  <TableColumn fx:id="tc_ci" minWidth="0.0" prefWidth="100.0" sortable="false" text="CI" />
+                  <TableColumn fx:id="tc_check" prefWidth="50.0" sortable="false" />
+                  <TableColumn fx:id="tc_num" prefWidth="50.0" sortable="false" text="#" />
+                  <TableColumn fx:id="tc_nombre" maxWidth="1.7976931348623157E308" minWidth="350.0" prefWidth="425.0" sortable="false" text="Nombre" />
+                  <TableColumn fx:id="tc_ci" minWidth="0.0" prefWidth="125.0" sortable="false" text="CI" />
                </columns>
                <padding>
                   <Insets left="5.0" right="5.0" />
                </padding>
             </TableView>
-            <HBox>
-               <children>
-                  <Label style="-fx-padding: 5 0 0 0;" styleClass="control-label" text="Selecciona una copia de respaldo" />
-                  <Region HBox.hgrow="ALWAYS" />
-                  <HBox fx:id="hb_cargar_respaldo" alignment="CENTER" styleClass="hand">
-                     <children>
-                        <Label fx:id="ic_cargar" styleClass="icon" text="X" />
-                        <Label text="Cargar respaldo ..." />
-                     </children>
-                  </HBox>
-               </children>
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" />
-               </padding>
-            </HBox>
          </children>
       </VBox>
+      <StackPane fx:id="overlay" visible="false" styleClass="overlay">
+         <VBox styleClass="dialog-card">
+            <Label text="Eliminar Funcionarios" styleClass="dialog-title"/>
+
+            <HBox spacing="20">
+               <VBox spacing="10">
+                  <Label text="¿Está seguro que quiere eliminar los funcionarios?"/>
+                  <Label text="Se eliminarán del biométrico..."/>
+                  <CheckBox fx:id="chkConfirmar"
+                            text="Confirmo eliminar los funcionarios seleccionados"/>
+               </VBox>
+
+               <ListView fx:id="lvFuncionarios"/>
+            </HBox>
+
+            <HBox spacing="10" alignment="CENTER_RIGHT">
+               <Button text="Cancelar" onAction="#cerrar"/>
+               <Button text="Aceptar" styleClass="rojo" onAction="#confirmar"/>
+            </HBox>
+         </VBox>
+      </StackPane>
    </children>
 </AnchorPane>

@@ -2,14 +2,14 @@ package controllers;
 
 import components.terminal.TerminalController;
 import javafx.application.Platform;
+import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableColumn;
-import javafx.scene.control.TableView;
+import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
@@ -37,15 +37,23 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_num;
     public TableColumn tc_nombre;
     public TableColumn tc_ci;
+    public Button btn_respaldar;
+    public Label icon_eliminar;
+    public Label icon_respaldar;
+    public Label icon_cargar;
+    public TextField tf_busqueda;
+    public Label lbl_seleccionados;
+    public Label lbl_filtrados;
 
     Terminal terminal= null;
     MainController mc = null;
+    ObservableList<Funcionario> funcionarios = FXCollections.observableArrayList();
+    private FilteredList<Funcionario> funcionariosFiltrados;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        tv_funcionarios.setEditable(true);
-        tc_check.setEditable(true);
         CheckBox checkAll = new CheckBox();
+        checkAll.getStyleClass().add("negro");
         checkAll.setOnAction(e -> {
             boolean seleccionado = checkAll.isSelected();
             for (Funcionario f : tv_funcionarios.getItems()) {
@@ -69,7 +77,55 @@ public class AdmFuncionariosController implements Initializable {
         tc_check.setCellValueFactory(cellData ->
                 cellData.getValue().seleccionadoProperty()
         );
-        tc_check.setCellFactory(CheckBoxTableCell.forTableColumn(tc_check));
+        tc_check.setCellFactory(col -> new TableCell<Funcionario, Boolean>() {
+
+            private final CheckBox checkBox = new CheckBox();
+            private Funcionario currentFuncionario;
+
+            {
+                checkBox.getStyleClass().addAll("check-box", "verde");
+            }
+            @Override
+            protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (empty) {
+                    setGraphic(null);
+                    if (currentFuncionario != null) {
+                        checkBox.selectedProperty()
+                                .unbindBidirectional(currentFuncionario.seleccionadoProperty());
+                        currentFuncionario = null;
+                    }
+                    return;
+                }
+                Funcionario f = (Funcionario) getTableRow().getItem();
+                if (f == null) {
+                    setGraphic(null);
+                    return;
+                }
+                // 🔥 desbindear el anterior
+                if (currentFuncionario != null) {
+                    checkBox.selectedProperty()
+                            .unbindBidirectional(currentFuncionario.seleccionadoProperty());
+                }
+                currentFuncionario = f;
+                // 🔥 bind correcto
+                checkBox.selectedProperty()
+                        .bindBidirectional(f.seleccionadoProperty());
+                setGraphic(checkBox);
+            }
+        });
+
+        icon_eliminar.setText("\ue7ad");
+        icon_respaldar.setText("\ue173");
+        icon_cargar.setText("\ue9fc");
+
+        funcionariosFiltrados = new FilteredList<>(funcionarios, f -> true);
+        tv_funcionarios.setItems(funcionariosFiltrados);
+
+        tf_busqueda.textProperty().addListener((obs, oldText, newText) -> {
+            aplicarFiltro(newText);
+        });
     }
 
     public void initData(Terminal terminal, MainController mc) {
@@ -80,22 +136,51 @@ public class AdmFuncionariosController implements Initializable {
             usuariosJson = TerminalController.ejecutarScriptPython("scriptpy/usuarios.py", terminal.ip, terminal.puerto + "");
             System.out.println(usuariosJson);
             JSONArray usuariosJSON = new JSONArray(usuariosJson);
-            List<Funcionario> funcionarios = new ArrayList<>();
+            funcionarios.clear();
             for (int i = 0; i < usuariosJSON.length(); i++) {
                 JSONObject u = usuariosJSON.getJSONObject(i);
-
                 int uid = u.optInt("uid");
                 int ci = u.optInt("user_id");
                 String nombre = u.optString("name");
-
                 funcionarios.add(new Funcionario(uid, ci, nombre));
             }
-
-            tv_funcionarios.getItems().setAll(funcionarios);
+            bindSeleccionados();
+            lbl_filtrados.textProperty().bind(
+                    Bindings.size(funcionariosFiltrados).asString()
+            );
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        //TerminalController.ejecutarScriptPython()
+    }
 
+    private void aplicarFiltro(String texto) {
+        String filtro = texto.toLowerCase().trim();
+        funcionariosFiltrados.setPredicate(f ->
+                f.getNombre().toLowerCase().contains(filtro) ||
+                        String.valueOf(f.getCi()).contains(filtro)
+        );
+    }
+
+    private List<Funcionario> getSeleccionados() {
+        List<Funcionario> seleccionados = new ArrayList<>();
+        for (Funcionario f : funcionarios) {
+            if (f.isSeleccionado()) {
+                seleccionados.add(f);
+            }
+        }
+        return seleccionados;
+    }
+
+    private void bindSeleccionados() {
+        funcionarios.forEach(f ->
+                f.seleccionadoProperty().addListener((obs, old, val) ->
+                        actualizarSeleccionados()
+                )
+        );
+    }
+
+    private void actualizarSeleccionados() {
+        long total = getSeleccionados().size();
+        lbl_seleccionados.setText(total + "");
     }
 }
