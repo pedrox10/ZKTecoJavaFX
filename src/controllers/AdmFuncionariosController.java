@@ -1,6 +1,8 @@
 package controllers;
 
+import app.Main;
 import components.terminal.TerminalController;
+import components.toast.ToastController;
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.beans.property.ReadOnlyObjectWrapper;
@@ -13,6 +15,8 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.StackPane;
+import javafx.stage.FileChooser;
 import models.Funcionario;
 import models.Respaldo;
 import models.Terminal;
@@ -23,10 +27,12 @@ import org.orman.mapper.Model;
 import org.orman.mapper.ModelQuery;
 import org.orman.sql.C;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.ResourceBundle;
 
 public class AdmFuncionariosController implements Initializable {
@@ -38,12 +44,14 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_nombre;
     public TableColumn tc_ci;
     public Button btn_respaldar;
+    public Button btn_cargar;
     public Label icon_eliminar;
     public Label icon_respaldar;
     public Label icon_cargar;
     public TextField tf_busqueda;
     public Label lbl_seleccionados;
     public Label lbl_filtrados;
+    public StackPane overlay;
 
     Terminal terminal= null;
     MainController mc = null;
@@ -182,5 +190,45 @@ public class AdmFuncionariosController implements Initializable {
     private void actualizarSeleccionados() {
         long total = getSeleccionados().size();
         lbl_seleccionados.setText(total + "");
+    }
+
+    @FXML
+    public void confirmarEliminar() {
+        overlay.setVisible(true);
+    }
+
+    @FXML
+    public void cerrarEliminar() {
+        overlay.setVisible(false);
+    }
+
+    @FXML
+    public void respaldar() {
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar respaldo");
+
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Respaldo (*.json)", "*.json")
+        );
+
+        File destino = fileChooser.showSaveDialog(
+                btn_respaldar.getScene().getWindow()
+        );
+    }
+
+    @FXML
+    public void cargarRespaldo() {
+        FileChooser fc = new FileChooser();
+        fc.setTitle("Seleccionar respaldo");
+        fc.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Respaldos", "*.json", "*.gams")
+        );
+        File archivo = fc.showOpenDialog(btn_cargar.getScene().getWindow());
+        if (archivo == null)
+            return;
+        else {
+            ToastController toast = ToastController.createToast("info", "Información", archivo.toString());
+        toast.show(mc.root);
+        }
     }
 }

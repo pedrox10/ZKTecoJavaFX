@@ -58,12 +58,12 @@
                         </HBox>
                         <HBox spacing="5.0">
                            <children>
-                              <Button fx:id="btn_eliminar" mnemonicParsing="false" styleClass="rojo" text="Eliminar">
+                              <Button fx:id="btn_eliminar" mnemonicParsing="false" onAction="#confirmarEliminar" styleClass="rojo" text="Eliminar">
                                  <graphic>
                                     <Label fx:id="icon_eliminar" styleClass="icon" text="x" />
                                  </graphic>
                               </Button>
-                              <Button fx:id="btn_respaldar" mnemonicParsing="false" text="Respaldar">
+                              <Button fx:id="btn_respaldar" mnemonicParsing="false" onAction="#respaldar" text="Respaldar">
                                  <styleClass>
                                     <String fx:value="azul" />
                                     <String fx:value="icon-left" />
@@ -77,7 +77,7 @@
                      </children>
                   </VBox>
                   <Separator orientation="VERTICAL" />
-                  <Button fx:id="btn_cargar" layoutX="365.0" layoutY="27.0" mnemonicParsing="false" text="Cargar Respaldo">
+                  <Button fx:id="btn_cargar" layoutX="365.0" layoutY="27.0" mnemonicParsing="false" onAction="#cargarRespaldo" text="Cargar Respaldo">
                      <graphic>
                         <Label fx:id="icon_cargar" styleClass="icon" text="x" />
                      </graphic>
@@ -101,26 +101,45 @@
             </TableView>
          </children>
       </VBox>
-      <StackPane fx:id="overlay" visible="false" styleClass="overlay">
-         <VBox styleClass="dialog-card">
-            <Label text="Eliminar Funcionarios" styleClass="dialog-title"/>
-
-            <HBox spacing="20">
-               <VBox spacing="10">
-                  <Label text="¿Está seguro que quiere eliminar los funcionarios?"/>
-                  <Label text="Se eliminarán del biométrico..."/>
-                  <CheckBox fx:id="chkConfirmar"
-                            text="Confirmo eliminar los funcionarios seleccionados"/>
-               </VBox>
-
-               <ListView fx:id="lvFuncionarios"/>
-            </HBox>
-
-            <HBox spacing="10" alignment="CENTER_RIGHT">
-               <Button text="Cancelar" onAction="#cerrar"/>
-               <Button text="Aceptar" styleClass="rojo" onAction="#confirmar"/>
-            </HBox>
-         </VBox>
+      <StackPane fx:id="overlay" styleClass="overlay" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+         <children>
+            <VBox maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card">
+               <children>
+                  <Label styleClass="titulo" text="Eliminar Funcionarios" />
+      
+                  <HBox spacing="20">
+         <children>
+                        <VBox prefWidth="300.0" spacing="10.0">
+                           <children>
+                              <Label text="Se eliminarán los funcionarios del biométrico, pero se mantendrán sus reportes y horarios asignados en la base de datos del sistema web hasta su ultima marcación." wrapText="true">
+                                 <VBox.margin>
+                                    <Insets />
+                                 </VBox.margin>
+                              </Label>
+                              <CheckBox fx:id="chkConfirmar" text="Confirmo eliminar los funcionarios seleccionados" wrapText="true">
+                                 <VBox.margin>
+                                    <Insets top="15.0" />
+                                 </VBox.margin>
+                              </CheckBox>
+                           </children>
+                        </VBox>
+         
+                        <ListView fx:id="lvFuncionarios" prefHeight="175.0" />
+         </children>
+                  </HBox>
+      
+                  <HBox alignment="CENTER_RIGHT" spacing="10">
+         <children>
+                        <Button onAction="#cerrarEliminar" text="Cancelar" />
+                        <Button styleClass="rojo" text="Aceptar" />
+         </children>
+                     <VBox.margin>
+                        <Insets bottom="-10.0" />
+                     </VBox.margin>
+                  </HBox>
+               </children>
+            </VBox>
+         </children>
       </StackPane>
    </children>
 </AnchorPane>

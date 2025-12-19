@@ -914,3 +914,14 @@
 	-fx-font-weight: 400;
 	-fx-text-fill: #757575; /* gris medio */
 }
+
+.overlay {
+	-fx-background-color: rgba(0, 0, 0, 0.45);
+}
+
+.dialog-card {
+	-fx-background-color: white;
+	-fx-padding: 24;
+	-fx-background-radius: 12;
+	-fx-effect: dropshadow(gaussian, rgba(0,0,0,0.25), 20, 0, 0, 4);
+}
