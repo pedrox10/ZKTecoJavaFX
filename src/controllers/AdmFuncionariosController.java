@@ -52,6 +52,9 @@ public class AdmFuncionariosController implements Initializable {
     public Label lbl_seleccionados;
     public Label lbl_filtrados;
     public StackPane overlay;
+    public CheckBox cb_confirmar_eliminar;
+    public Button btn_aceptar_eliminar;
+    public ListView<Funcionario> lv_funcionarios;
 
     Terminal terminal= null;
     MainController mc = null;
@@ -134,6 +137,10 @@ public class AdmFuncionariosController implements Initializable {
         tf_busqueda.textProperty().addListener((obs, oldText, newText) -> {
             aplicarFiltro(newText);
         });
+
+        btn_aceptar_eliminar.disableProperty().bind(
+                cb_confirmar_eliminar.selectedProperty().not()
+        );
     }
 
     public void initData(Terminal terminal, MainController mc) {
@@ -194,7 +201,15 @@ public class AdmFuncionariosController implements Initializable {
 
     @FXML
     public void confirmarEliminar() {
-        overlay.setVisible(true);
+        if(getSeleccionados().size() > 0) {
+            cb_confirmar_eliminar.setSelected(false);
+            lv_funcionarios.setItems(FXCollections.observableArrayList(getSeleccionados()));
+            overlay.setVisible(true);
+        } else {
+            ToastController toast = ToastController.createToast("info", "Información", "Debes seleccionar al menos un funcionario");
+            toast.show(mc.root);
+        }
+
     }
 
     @FXML
@@ -203,17 +218,25 @@ public class AdmFuncionariosController implements Initializable {
     }
 
     @FXML
+    public void eliminar(){
+        System.out.println("eliminar");
+    }
+
+    @FXML
     public void respaldar() {
-        FileChooser fileChooser = new FileChooser();
-        fileChooser.setTitle("Guardar respaldo");
-
-        fileChooser.getExtensionFilters().add(
-                new FileChooser.ExtensionFilter("Respaldo (*.json)", "*.json")
-        );
-
-        File destino = fileChooser.showSaveDialog(
-                btn_respaldar.getScene().getWindow()
-        );
+        if(getSeleccionados().size() > 0) {
+            FileChooser fileChooser = new FileChooser();
+            fileChooser.setTitle("Guardar respaldo");
+            fileChooser.getExtensionFilters().add(
+                    new FileChooser.ExtensionFilter("Respaldo (*.json)", "*.json")
+            );
+            File destino = fileChooser.showSaveDialog(
+                    btn_respaldar.getScene().getWindow()
+            );
+        } else {
+            ToastController toast = ToastController.createToast("info", "Información", "Debes seleccionar al menos un funcionario");
+            toast.show(mc.root);
+        }
     }
 
     @FXML
@@ -228,7 +251,7 @@ public class AdmFuncionariosController implements Initializable {
             return;
         else {
             ToastController toast = ToastController.createToast("info", "Información", archivo.toString());
-        toast.show(mc.root);
+            toast.show(mc.root);
         }
     }
 }

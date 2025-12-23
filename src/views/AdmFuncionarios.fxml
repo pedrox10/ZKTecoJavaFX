@@ -42,7 +42,7 @@
                            <children>
                               <Label styleClass="label-titulo" text="Buscar Funcionario" />
                               <Region HBox.hgrow="ALWAYS" />
-                              <Label fx:id="lbl_filtrados" layoutX="10.0" layoutY="10.0" style="-: ;" styleClass="label-titulo" text="12" />
+                              <Label fx:id="lbl_filtrados" layoutX="10.0" layoutY="10.0" style="-: ;" styleClass="label-titulo" text="0" />
                            </children>
                         </HBox>
                         <TextField fx:id="tf_busqueda" minWidth="250.0" style="-fx-padding: 0.75em 0.5em 0.75em 0.5em;" />
@@ -101,7 +101,7 @@
             </TableView>
          </children>
       </VBox>
-      <StackPane fx:id="overlay" styleClass="overlay" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <StackPane fx:id="overlay" styleClass="overlay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <VBox maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card">
                <children>
@@ -116,7 +116,7 @@
                                     <Insets />
                                  </VBox.margin>
                               </Label>
-                              <CheckBox fx:id="chkConfirmar" text="Confirmo eliminar los funcionarios seleccionados" wrapText="true">
+                              <CheckBox fx:id="cb_confirmar_eliminar" text="Confirmo eliminar los funcionarios seleccionados" wrapText="true">
                                  <VBox.margin>
                                     <Insets top="15.0" />
                                  </VBox.margin>
@@ -124,14 +124,14 @@
                            </children>
                         </VBox>
          
-                        <ListView fx:id="lvFuncionarios" prefHeight="175.0" />
+                        <ListView fx:id="lv_funcionarios" prefHeight="175.0" />
          </children>
                   </HBox>
       
                   <HBox alignment="CENTER_RIGHT" spacing="10">
          <children>
                         <Button onAction="#cerrarEliminar" text="Cancelar" />
-                        <Button styleClass="rojo" text="Aceptar" />
+                        <Button fx:id="btn_aceptar_eliminar" onAction="#eliminar" styleClass="rojo" text="Aceptar" />
          </children>
                      <VBox.margin>
                         <Insets bottom="-10.0" />

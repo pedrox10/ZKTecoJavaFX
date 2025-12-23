@@ -53,5 +53,8 @@ public class Funcionario {
         seleccionado.set(value);
     }
 
-    // getters/setters restantes
+    @Override
+    public String toString() {
+        return nombre;
+    }
 }
