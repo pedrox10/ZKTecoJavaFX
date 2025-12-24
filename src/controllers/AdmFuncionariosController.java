@@ -1,39 +1,29 @@
 package controllers;
 
-import app.Main;
 import components.terminal.TerminalController;
 import components.toast.ToastController;
-import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
-import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
-import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.StackPane;
 import javafx.stage.FileChooser;
 import models.Funcionario;
-import models.Respaldo;
 import models.Terminal;
-import models.Usuario;
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.orman.mapper.Model;
-import org.orman.mapper.ModelQuery;
-import org.orman.sql.C;
 
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.ResourceBundle;
+import java.util.StringJoiner;
 
 public class AdmFuncionariosController implements Initializable {
 
@@ -209,7 +199,6 @@ public class AdmFuncionariosController implements Initializable {
             ToastController toast = ToastController.createToast("info", "Información", "Debes seleccionar al menos un funcionario");
             toast.show(mc.root);
         }
-
     }
 
     @FXML
@@ -218,8 +207,29 @@ public class AdmFuncionariosController implements Initializable {
     }
 
     @FXML
-    public void eliminar(){
-        System.out.println("eliminar");
+    public void eliminar() {
+        StringJoiner uids = new StringJoiner(",");
+        StringJoiner cis  = new StringJoiner(",");
+        for (Funcionario f : getSeleccionados()) {
+            uids.add(String.valueOf(f.getUid()));
+            cis.add(String.valueOf(f.getCi()));
+        }
+        try {
+            // 2. Ejecutar el script con los argumentos formateados
+            System.out.println(terminal.getIp());
+            String resultado = TerminalController.ejecutarScriptPython(
+                    "scriptpy/eliminar_usuarios.py",
+                    terminal.getIp(),
+                    uids.toString(),
+                    cis.toString()
+            );
+            System.out.println("Resultado de eliminación: " + resultado);
+            // 3. Opcional: Refrescar la tabla o mostrar mensaje de éxito
+            //actualizarTabla();
+        } catch (IOException e) {
+            e.printStackTrace();
+            // Mostrar alerta de error de conexión
+        }
     }
 
     @FXML

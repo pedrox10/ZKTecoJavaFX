@@ -37,9 +37,7 @@ import java.io.*;
 import java.net.URL;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Optional;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class TerminalController implements Initializable {
 
@@ -355,19 +353,17 @@ public class TerminalController implements Initializable {
         new Thread(task).start();
     }
 
-    public static String ejecutarScriptPython(String scriptPath, String ip, String puerto) throws IOException {
-        // Construir el comando
+    public static String ejecutarScriptPython(String scriptPath, String... args) throws IOException {
         String os = System.getProperty("os.name").toLowerCase();
-        String comandoPython;
-        if (os.contains("win")) {
-            comandoPython = "python"; // En Windows suele ser solo "python"
-        } else {
-            comandoPython = "python3"; // En Linux o macOS normalmente es "python3"
-        }
-        ProcessBuilder processBuilder = new ProcessBuilder(comandoPython, scriptPath, ip, puerto);
+        String comandoPython = os.contains("win") ? "python" : "python3";
+        // Construir la lista de comandos: [python, scriptPath, arg1, arg2, ...]
+        List<String> comando = new ArrayList<>();
+        comando.add(comandoPython);
+        comando.add(scriptPath);
+        comando.addAll(Arrays.asList(args));
+        ProcessBuilder processBuilder = new ProcessBuilder(comando);
         processBuilder.redirectErrorStream(true);
         Process process = processBuilder.start();
-        // Leer la salida del script Python
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         StringBuilder output = new StringBuilder();
         String line;

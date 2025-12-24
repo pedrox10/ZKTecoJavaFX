@@ -101,7 +101,7 @@
             </TableView>
          </children>
       </VBox>
-      <StackPane fx:id="overlay" styleClass="overlay" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <StackPane fx:id="overlay" styleClass="overlay" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <VBox maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card">
                <children>
