@@ -29,7 +29,7 @@
             </Label>
          </children>
       </HBox>
-      <VBox fx:id="vb_primer_paso" alignment="TOP_CENTER" AnchorPane.topAnchor="60.0">
+      <VBox alignment="TOP_CENTER" AnchorPane.topAnchor="60.0">
          <children>
             <HBox fx:id="hb_cabecera1" alignment="CENTER_LEFT" spacing="10.0">
                <padding>
@@ -103,7 +103,7 @@
       </VBox>
       <StackPane fx:id="overlay" styleClass="overlay" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
-            <VBox maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card">
+            <VBox fx:id="vb_confirmar_eliminar" maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card">
                <children>
                   <Label styleClass="titulo" text="Eliminar Funcionarios" />
       
@@ -137,6 +137,32 @@
                         <Insets bottom="-10.0" />
                      </VBox.margin>
                   </HBox>
+               </children>
+            </VBox>
+            <VBox fx:id="vb_reporte_eliminacion" layoutX="52.0" layoutY="178.0" maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card">
+               <children>
+                  <HBox>
+                     <children>
+                        <Label styleClass="titulo" text="Reporte Eliminación" />
+                        <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="lbl_cerrar" alignment="CENTER" contentDisplay="CENTER" maxHeight="16.0" maxWidth="16.0" onMouseClicked="#cerrarReporte" prefHeight="16.0" prefWidth="16.0" text="x" textAlignment="CENTER">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                           <styleClass>
+                              <String fx:value="circle" />
+                              <String fx:value="hand" />
+                              <String fx:value="azul" />
+                           </styleClass>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <TableView>
+                    <columns>
+                      <TableColumn prefWidth="75.0" text="C1" />
+                      <TableColumn prefWidth="75.0" text="C2" />
+                    </columns>
+                  </TableView>
                </children>
             </VBox>
          </children>

@@ -11,14 +11,14 @@ import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import models.Funcionario;
 import models.Terminal;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,8 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_num;
     public TableColumn tc_nombre;
     public TableColumn tc_ci;
+    public VBox vb_confirmar_eliminar;
+    public VBox vb_reporte_eliminacion;
     public Button btn_respaldar;
     public Button btn_cargar;
     public Label icon_eliminar;
@@ -118,7 +120,7 @@ public class AdmFuncionariosController implements Initializable {
         });
 
         icon_eliminar.setText("\ue7ad");
-        icon_respaldar.setText("\ue173");
+        icon_respaldar.setText("\ueb60");
         icon_cargar.setText("\ue9fc");
 
         funcionariosFiltrados = new FilteredList<>(funcionarios, f -> true);
@@ -194,7 +196,7 @@ public class AdmFuncionariosController implements Initializable {
         if(getSeleccionados().size() > 0) {
             cb_confirmar_eliminar.setSelected(false);
             lv_funcionarios.setItems(FXCollections.observableArrayList(getSeleccionados()));
-            overlay.setVisible(true);
+            mostrarVistaOverlay(vb_reporte_eliminacion);
         } else {
             ToastController toast = ToastController.createToast("info", "Información", "Debes seleccionar al menos un funcionario");
             toast.show(mc.root);
@@ -233,19 +235,67 @@ public class AdmFuncionariosController implements Initializable {
     }
 
     @FXML
+    public void cerrarReporte() {
+        overlay.setVisible(false);
+    }
+
+
+    @FXML
     public void respaldar() {
-        if(getSeleccionados().size() > 0) {
-            FileChooser fileChooser = new FileChooser();
-            fileChooser.setTitle("Guardar respaldo");
-            fileChooser.getExtensionFilters().add(
-                    new FileChooser.ExtensionFilter("Respaldo (*.json)", "*.json")
+
+        List<Funcionario> seleccionados = getSeleccionados();
+        if (seleccionados.isEmpty()) {
+            ToastController toast = ToastController.createToast(
+                    "info",
+                    "Información",
+                    "Debes seleccionar al menos un funcionario"
             );
-            File destino = fileChooser.showSaveDialog(
-                    btn_respaldar.getScene().getWindow()
-            );
-        } else {
-            ToastController toast = ToastController.createToast("info", "Información", "Debes seleccionar al menos un funcionario");
             toast.show(mc.root);
+            return;
+        }
+
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.setTitle("Guardar respaldo");
+        fileChooser.getExtensionFilters().add(
+                new FileChooser.ExtensionFilter("Respaldo (*.json)", "*.json")
+        );
+
+        File destino = fileChooser.showSaveDialog(
+                btn_respaldar.getScene().getWindow()
+        );
+
+        if (destino == null) {
+            return; // usuario canceló
+        }
+        try {
+            // 1️⃣ Construir user_ids (CI)
+            String userIds = seleccionados.stream()
+                    .map(f -> String.valueOf(f.getCi()))
+                    .collect(java.util.stream.Collectors.joining(","));
+            // 2️⃣ Ejecutar script
+            String json = TerminalController.ejecutarScriptPython(
+                    "scriptpy/usuarios_y_huellas.py",
+                    terminal.ip,
+                    userIds
+            );
+            // 3️⃣ Guardar archivo
+            guardarArchivo(destino, json);
+
+            ToastController toast = ToastController.createToast(
+                    "success",
+                    "Respaldo generado",
+                    "El respaldo se guardó correctamente"
+            );
+            toast.show(mc.root);
+
+        } catch (Exception e) {
+            ToastController toast = ToastController.createToast(
+                    "error",
+                    "Error",
+                    "No se pudo generar el respaldo"
+            );
+            toast.show(mc.root);
+            e.printStackTrace();
         }
     }
 
@@ -262,6 +312,36 @@ public class AdmFuncionariosController implements Initializable {
         else {
             ToastController toast = ToastController.createToast("info", "Información", archivo.toString());
             toast.show(mc.root);
+        }
+    }
+
+    private void mostrarVistaOverlay(VBox vistaAMostrar) {
+        overlay.setVisible(true);
+        // Creamos un array con todas las vistas que residen en el StackPane
+        VBox[] todasLasVistas = {
+                vb_confirmar_eliminar,
+                vb_reporte_eliminacion
+        };
+
+        for (VBox v : todasLasVistas) {
+            if (v == vistaAMostrar) { // Comparación de identidad (referencia)
+                v.setVisible(true);
+                v.setManaged(true);  // Permite que JavaFX calcule su tamaño
+            } else {
+                v.setVisible(false);
+                v.setManaged(false); // Evita que una vista oculta afecte al diseño
+            }
+        }
+    }
+
+    private void guardarArchivo(File archivo, String contenido) throws IOException {
+        try (Writer writer = new BufferedWriter(
+                new OutputStreamWriter(
+                        new FileOutputStream(archivo),
+                        "UTF-8"
+                )
+        )) {
+            writer.write(contenido);
         }
     }
 }
