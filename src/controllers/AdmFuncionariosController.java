@@ -14,6 +14,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import models.Funcionario;
+import models.ReporteEliminacion;
 import models.Terminal;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -47,6 +48,11 @@ public class AdmFuncionariosController implements Initializable {
     public CheckBox cb_confirmar_eliminar;
     public Button btn_aceptar_eliminar;
     public ListView<Funcionario> lv_funcionarios;
+    public TableView<ReporteEliminacion> tv_reporte;
+    public TableColumn tc_num_reporte;
+    public TableColumn tc_nombre_reporte;
+    public TableColumn tc_mensaje_reporte;
+    public TableColumn tc_icono;
 
     Terminal terminal= null;
     MainController mc = null;
@@ -133,6 +139,33 @@ public class AdmFuncionariosController implements Initializable {
         btn_aceptar_eliminar.disableProperty().bind(
                 cb_confirmar_eliminar.selectedProperty().not()
         );
+
+        tc_num_reporte.setCellFactory(col -> new TableCell<ReporteEliminacion, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty)
+                    setText(null);
+                else
+                    setText(String.valueOf(getIndex() + 1));
+            }
+        });
+        tc_nombre_reporte.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        tc_mensaje_reporte.setCellValueFactory(new PropertyValueFactory<>("mensaje"));
+        tc_icono.setCellValueFactory(new PropertyValueFactory<>("exito"));
+        tc_icono.setCellFactory(col -> new TableCell<ReporteEliminacion, Boolean>() {
+            @Override
+            protected void updateItem(Boolean exito, boolean empty) {
+                super.updateItem(exito, empty);
+                if (empty || exito == null) {
+                    setText(null);
+                } else {
+                    setText(exito ? "\ue86c" : "\ue5c9");
+                    getStyleClass().add("icon");
+                    getStyleClass().setAll(exito ? "label-verde" : "label-rojo");
+                }
+            }
+        });
     }
 
     public void initData(Terminal terminal, MainController mc) {
@@ -196,7 +229,7 @@ public class AdmFuncionariosController implements Initializable {
         if(getSeleccionados().size() > 0) {
             cb_confirmar_eliminar.setSelected(false);
             lv_funcionarios.setItems(FXCollections.observableArrayList(getSeleccionados()));
-            mostrarVistaOverlay(vb_reporte_eliminacion);
+            mostrarVistaOverlay(vb_confirmar_eliminar);
         } else {
             ToastController toast = ToastController.createToast("info", "Información", "Debes seleccionar al menos un funcionario");
             toast.show(mc.root);
@@ -225,9 +258,30 @@ public class AdmFuncionariosController implements Initializable {
                     uids.toString(),
                     cis.toString()
             );
-            System.out.println("Resultado de eliminación: " + resultado);
-            // 3. Opcional: Refrescar la tabla o mostrar mensaje de éxito
-            //actualizarTabla();
+            JSONObject json = new JSONObject(resultado);
+            boolean exito = json.getBoolean("exito");
+            if(exito) {
+                String mensaje = json.getString("mensaje");
+                ToastController toast = ToastController.createToast("success", "Comando enviado", mensaje);
+                toast.show(mc.root);
+                JSONArray resultados = json.getJSONArray("resultados");
+                ObservableList<ReporteEliminacion> data = FXCollections.observableArrayList();
+                for (int i = 0; i < resultados.length(); i++) {
+                    JSONObject r = resultados.getJSONObject(i);
+                    int uid = r.optInt("uid");
+                    String nombreRes = r.optString("nombre");
+                    String mensajeRes = r.optString("mensaje");
+                    boolean exitoRes = r.optBoolean("exito");
+                    data.add(new ReporteEliminacion(uid, nombreRes, mensajeRes, exitoRes));
+                }
+                tv_reporte.setItems(data);
+                mostrarVistaOverlay(vb_reporte_eliminacion);
+            } else {
+                String mensaje = json.getString("mensaje");
+                ToastController toast = ToastController.createToast("error", "Error", mensaje);
+                toast.show(mc.root);
+            }
+
         } catch (IOException e) {
             e.printStackTrace();
             // Mostrar alerta de error de conexión

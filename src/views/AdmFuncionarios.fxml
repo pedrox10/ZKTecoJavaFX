@@ -157,10 +157,12 @@
                         </Label>
                      </children>
                   </HBox>
-                  <TableView>
+                  <TableView fx:id="tv_reporte">
                     <columns>
-                      <TableColumn prefWidth="75.0" text="C1" />
-                      <TableColumn prefWidth="75.0" text="C2" />
+                      <TableColumn fx:id="tc_num_reporte" prefWidth="45.0" text="#" />
+                      <TableColumn fx:id="tc_nombre_reporte" prefWidth="225.0" text="Nombre" />
+                        <TableColumn fx:id="tc_mensaje_reporte" prefWidth="255.0" text="Mensaje" />
+                        <TableColumn fx:id="tc_icono" prefWidth="22.0" />
                     </columns>
                   </TableView>
                </children>

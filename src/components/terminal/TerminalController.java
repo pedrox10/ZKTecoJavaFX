@@ -79,7 +79,7 @@ public class TerminalController implements Initializable {
         Tooltip tt_editar = new Tooltip("Editar Terminal");
         lbl_editar.setTooltip(tt_editar);
         lbl_adm_usuarios.setText("\ue7ef");
-        Tooltip tt_adm_usuarios = new Tooltip("Adm. Funcioanrios");
+        Tooltip tt_adm_usuarios = new Tooltip("Adm. Funcionarios");
         lbl_adm_usuarios.setTooltip(tt_adm_usuarios);
         Tooltip tt_eliminar = new Tooltip("Eliminar Terminal");
         tt_eliminar.setStyle("-fx-font-size: 12px;");
