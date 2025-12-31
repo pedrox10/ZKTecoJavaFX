@@ -229,6 +229,7 @@ public class TerminalController implements Initializable {
         if (conectado) {
             toast = ToastController.createToast("success", "Listo", "Terminal con conexión");
             toast.show(root);
+            lbl_adm_usuarios.setDisable(false);
             btn_respaldo.setDisable(false);
         } else {
             toast = ToastController.createToast("error", "Error", "No se pudo conectar al terminal");

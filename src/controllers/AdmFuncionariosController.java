@@ -272,6 +272,9 @@ public class AdmFuncionariosController implements Initializable {
                     String nombreRes = r.optString("nombre");
                     String mensajeRes = r.optString("mensaje");
                     boolean exitoRes = r.optBoolean("exito");
+                    if (exitoRes) {
+                        funcionarios.removeIf(f -> f.getUid() == uid);
+                    }
                     data.add(new ReporteEliminacion(uid, nombreRes, mensajeRes, exitoRes));
                 }
                 tv_reporte.setItems(data);
