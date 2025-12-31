@@ -169,5 +169,10 @@
             </VBox>
          </children>
       </StackPane>
+      <VBox prefHeight="200.0" prefWidth="100.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
+         <children>
+            <Button mnemonicParsing="false" text="Button" />
+         </children>
+      </VBox>
    </children>
 </AnchorPane>
