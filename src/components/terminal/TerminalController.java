@@ -181,6 +181,8 @@ public class TerminalController implements Initializable {
         AdmFuncionariosController afc = loader.getController();
         afc.initData(terminal, mc);
         AnchorPane root = (AnchorPane) loader.getRoot();
+        dialogo.initModality(Modality.APPLICATION_MODAL);
+        dialogo.initOwner(mc.pane_mascara.getScene().getWindow());
         dialogo.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
         dialogo.getDialogPane().setContent(root);
         Window window = dialogo.getDialogPane().getScene().getWindow();
@@ -225,6 +227,7 @@ public class TerminalController implements Initializable {
         System.out.println(respuesta);
         JSONObject respuestaJson = new JSONObject(respuesta);
         boolean conectado = respuestaJson.getBoolean("connected");
+        //boolean conectado = true;
         ToastController toast;
         if (conectado) {
             toast = ToastController.createToast("success", "Listo", "Terminal con conexión");

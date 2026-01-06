@@ -1,8 +1,10 @@
 package controllers;
 
+import app.Main;
 import components.terminal.TerminalController;
 import components.toast.ToastController;
 import javafx.beans.binding.Bindings;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.collections.transformation.FilteredList;
@@ -14,6 +16,8 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
 import models.Funcionario;
+import models.FuncionarioRespaldado;
+import models.Huella;
 import models.ReporteEliminacion;
 import models.Terminal;
 import org.json.JSONArray;
@@ -21,14 +25,14 @@ import org.json.JSONObject;
 
 import java.io.*;
 import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.ResourceBundle;
-import java.util.StringJoiner;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Paths;
+import java.util.*;
 
 public class AdmFuncionariosController implements Initializable {
 
     @FXML
+    public Label lbl_titulo;
     public TableView<Funcionario> tv_funcionarios;
     public TableColumn<Funcionario, Boolean> tc_check;
     public TableColumn tc_num;
@@ -53,11 +57,21 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_nombre_reporte;
     public TableColumn tc_mensaje_reporte;
     public TableColumn tc_icono;
+    public VBox vb_funcionarios;
+    public VBox vb_cargar_respaldo;
+    public Label lbl_respaldados;
+    public TableView<FuncionarioRespaldado> tv_respaldados;
+    public TableColumn<FuncionarioRespaldado, Boolean> tc_check_respaldado;
+    public TableColumn tc_nombre_respaldado;
+    public TableColumn tc_ci_respaldado;
+    public TableColumn<FuncionarioRespaldado, Integer> tc_num_huellas;
 
     Terminal terminal= null;
     MainController mc = null;
     ObservableList<Funcionario> funcionarios = FXCollections.observableArrayList();
     private FilteredList<Funcionario> funcionariosFiltrados;
+    ObservableList<FuncionarioRespaldado> respaldados = FXCollections.observableArrayList();
+    private FilteredList<FuncionarioRespaldado> respaldadosFiltrados;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
@@ -87,22 +101,18 @@ public class AdmFuncionariosController implements Initializable {
                 cellData.getValue().seleccionadoProperty()
         );
         tc_check.setCellFactory(col -> new TableCell<Funcionario, Boolean>() {
-
             private final CheckBox checkBox = new CheckBox();
             private Funcionario currentFuncionario;
-
             {
                 checkBox.getStyleClass().addAll("check-box", "verde");
             }
             @Override
             protected void updateItem(Boolean item, boolean empty) {
                 super.updateItem(item, empty);
-
                 if (empty) {
                     setGraphic(null);
                     if (currentFuncionario != null) {
-                        checkBox.selectedProperty()
-                                .unbindBidirectional(currentFuncionario.seleccionadoProperty());
+                        checkBox.selectedProperty().unbindBidirectional(currentFuncionario.seleccionadoProperty());
                         currentFuncionario = null;
                     }
                     return;
@@ -114,32 +124,25 @@ public class AdmFuncionariosController implements Initializable {
                 }
                 // 🔥 desbindear el anterior
                 if (currentFuncionario != null) {
-                    checkBox.selectedProperty()
-                            .unbindBidirectional(currentFuncionario.seleccionadoProperty());
+                    checkBox.selectedProperty().unbindBidirectional(currentFuncionario.seleccionadoProperty());
                 }
                 currentFuncionario = f;
                 // 🔥 bind correcto
-                checkBox.selectedProperty()
-                        .bindBidirectional(f.seleccionadoProperty());
+                checkBox.selectedProperty().bindBidirectional(f.seleccionadoProperty());
                 setGraphic(checkBox);
             }
         });
-
         icon_eliminar.setText("\ue7ad");
         icon_respaldar.setText("\ueb60");
         icon_cargar.setText("\ue9fc");
-
         funcionariosFiltrados = new FilteredList<>(funcionarios, f -> true);
         tv_funcionarios.setItems(funcionariosFiltrados);
-
         tf_busqueda.textProperty().addListener((obs, oldText, newText) -> {
             aplicarFiltro(newText);
         });
-
         btn_aceptar_eliminar.disableProperty().bind(
                 cb_confirmar_eliminar.selectedProperty().not()
         );
-
         tc_num_reporte.setCellFactory(col -> new TableCell<ReporteEliminacion, Number>() {
             @Override
             protected void updateItem(Number item, boolean empty) {
@@ -166,31 +169,76 @@ public class AdmFuncionariosController implements Initializable {
                 }
             }
         });
+
+        respaldadosFiltrados = new FilteredList<>(respaldados, f -> true);
+        tv_respaldados.setItems(respaldadosFiltrados);
+        tc_check_respaldado.setCellValueFactory(cellData ->
+                cellData.getValue().seleccionadoProperty()
+        );
+        tc_check_respaldado.setCellFactory(col -> new TableCell<FuncionarioRespaldado, Boolean>() {
+            private final CheckBox checkBox = new CheckBox();
+            private FuncionarioRespaldado currentFuncionario;
+            {
+                checkBox.getStyleClass().addAll("check-box", "verde");
+            }
+            @Override
+            protected void updateItem(Boolean item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty) {
+                    setGraphic(null);
+                    if (currentFuncionario != null) {
+                        checkBox.selectedProperty().unbindBidirectional(currentFuncionario.seleccionadoProperty());
+                        currentFuncionario = null;
+                    }
+                    return;
+                }
+                FuncionarioRespaldado f = (FuncionarioRespaldado) getTableRow().getItem();
+                if (f == null) {
+                    setGraphic(null);
+                    return;
+                }
+                // 🔥 desbindear el anterior
+                if (currentFuncionario != null) {
+                    checkBox.selectedProperty().unbindBidirectional(currentFuncionario.seleccionadoProperty());
+                }
+                currentFuncionario = f;
+                // 🔥 bind correcto
+                checkBox.selectedProperty().bindBidirectional(f.seleccionadoProperty());
+                setGraphic(checkBox);
+            }
+        });
+        tc_nombre_respaldado.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        tc_ci_respaldado.setCellValueFactory(new PropertyValueFactory<>("ci"));
+        tc_num_huellas.setCellValueFactory(cd ->
+                new ReadOnlyObjectWrapper<>(cd.getValue().getCantidadHuellas())
+        );
     }
 
-    public void initData(Terminal terminal, MainController mc) {
+    public void initData(Terminal terminal, MainController mc) throws IOException {
         this.terminal = terminal;
         this.mc = mc;
         String usuariosJson = null;
-        try {
-            usuariosJson = TerminalController.ejecutarScriptPython("scriptpy/usuarios.py", terminal.ip, terminal.puerto + "");
-            System.out.println(usuariosJson);
-            JSONArray usuariosJSON = new JSONArray(usuariosJson);
-            funcionarios.clear();
-            for (int i = 0; i < usuariosJSON.length(); i++) {
-                JSONObject u = usuariosJSON.getJSONObject(i);
-                int uid = u.optInt("uid");
-                int ci = u.optInt("user_id");
-                String nombre = u.optString("name");
-                funcionarios.add(new Funcionario(uid, ci, nombre));
-            }
-            bindSeleccionados();
-            lbl_filtrados.textProperty().bind(
-                    Bindings.size(funcionariosFiltrados).asString()
-            );
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        usuariosJson = TerminalController.ejecutarScriptPython("scriptpy/usuarios.py", terminal.ip, terminal.puerto + "");
+        System.out.println(usuariosJson);
+        //usuariosJson = "[{\"uid\":1,\"password\":\"\",\"user_id\":\"1\",\"group_id\":\"\",\"name\":\"DENILSON\",\"privilege\":14},{\"uid\":2,\"password\":\"\",\"user_id\":\"7920529\",\"group_id\":\"\",\"name\":\"LINETH CASTELLON GOMEZ\",\"privilege\":0},{\"uid\":3,\"password\":\"\",\"user_id\":\"2396993\",\"group_id\":\"\",\"name\":\"FABIOLA SANCHEZ ORTIZ\",\"privilege\":0},{\"uid\":4,\"password\":\"\",\"user_id\":\"7996541\",\"group_id\":\"\",\"name\":\"IVAN ALCONZ LEDEZMA\",\"privilege\":0},{\"uid\":6,\"password\":\"\",\"user_id\":\"4440091\",\"group_id\":\"\",\"name\":\"YURI ARELLANO  DELGADO\",\"privilege\":0},{\"uid\":7,\"password\":\"\",\"user_id\":\"5205968\",\"group_id\":\"\",\"name\":\"SIXTO SERRUDO VARGAS\",\"privilege\":0},{\"uid\":8,\"password\":\"\",\"user_id\":\"3\",\"group_id\":\"\",\"name\":\"FREDY\",\"privilege\":14},{\"uid\":9,\"password\":\"\",\"user_id\":\"4094083\",\"group_id\":\"\",\"name\":\"CLAUDIA M ROJAS VALENCIA\",\"privilege\":0},{\"uid\":10,\"password\":\"\",\"user_id\":\"5224790\",\"group_id\":\"\",\"name\":\"NICOLAS B SAAVEDRA ROMER\",\"privilege\":0},{\"uid\":11,\"password\":\"\",\"user_id\":\"8825808\",\"group_id\":\"\",\"name\":\"ELIANA D  MAMANI HUARANC\",\"privilege\":0},{\"uid\":13,\"password\":\"\",\"user_id\":\"7884667\",\"group_id\":\"\",\"name\":\"GONZALO ROJAS ROJAS\",\"privilege\":0},{\"uid\":14,\"password\":\"\",\"user_id\":\"2899783\",\"group_id\":\"\",\"name\":\"ERASMO CORRALES\",\"privilege\":0},{\"uid\":16,\"password\":\"\",\"user_id\":\"6458199\",\"group_id\":\"\",\"name\":\"ANAHI MEYBOL SOLIZ\",\"privilege\":0},{\"uid\":17,\"password\":\"\",\"user_id\":\"7920665\",\"group_id\":\"\",\"name\":\"WALTER ERQUICIA ADRIAN\",\"privilege\":0},{\"uid\":18,\"password\":\"\",\"user_id\":\"13996188\",\"group_id\":\"\",\"name\":\"ELIUD CAMATA GONZALES\",\"privilege\":0},{\"uid\":24,\"password\":\"\",\"user_id\":\"7928174\",\"group_id\":\"\",\"name\":\"GERMAN TARQUI OLIVERA\",\"privilege\":0},{\"uid\":25,\"password\":\"\",\"user_id\":\"5276494\",\"group_id\":\"\",\"name\":\"MAGDA ORELLANA CACERES\",\"privilege\":0},{\"uid\":26,\"password\":\"\",\"user_id\":\"8834355\",\"group_id\":\"\",\"name\":\"JAVIER IQUISI CAZORLA\",\"privilege\":0},{\"uid\":27,\"password\":\"\",\"user_id\":\"4422301\",\"group_id\":\"\",\"name\":\"JAVIER MORALES MAMANI\",\"privilege\":0},{\"uid\":29,\"password\":\"\",\"user_id\":\"9426350\",\"group_id\":\"\",\"name\":\"BILLY\",\"privilege\":14},{\"uid\":30,\"password\":\"\",\"user_id\":\"5206858\",\"group_id\":\"\",\"name\":\"MARTHA MORALES REVOLLO\",\"privilege\":0},{\"uid\":31,\"password\":\"\",\"user_id\":\"5906825\",\"group_id\":\"\",\"name\":\"ROLANDO AGUILAR ROJAS\",\"privilege\":0},{\"uid\":32,\"password\":\"\",\"user_id\":\"9413936\",\"group_id\":\"\",\"name\":\"JOSE LUIS HERNANDEZ\",\"privilege\":0},{\"uid\":33,\"password\":\"\",\"user_id\":\"7907930\",\"group_id\":\"\",\"name\":\"NEYVA TORRICO QUILO\",\"privilege\":0},{\"uid\":34,\"password\":\"\",\"user_id\":\"5972630\",\"group_id\":\"\",\"name\":\"VANESSA R VASQUEZ VILLEG\",\"privilege\":0},{\"uid\":35,\"password\":\"\",\"user_id\":\"6474500\",\"group_id\":\"\",\"name\":\"JAIME BRAVO CARVAJAL\",\"privilege\":0},{\"uid\":36,\"password\":\"\",\"user_id\":\"5191910\",\"group_id\":\"\",\"name\":\"EDWIN ESPINOZA MAMANI\",\"privilege\":0},{\"uid\":37,\"password\":\"\",\"user_id\":\"5274788\",\"group_id\":\"\",\"name\":\"GRISSEL PEREZ URNA\",\"privilege\":0}]";
+        JSONArray usuariosJSON = new JSONArray(usuariosJson);
+        funcionarios.clear();
+        for (int i = 0; i < usuariosJSON.length(); i++) {
+            JSONObject u = usuariosJSON.getJSONObject(i);
+            int uid = u.optInt("uid");
+            int ci = u.optInt("user_id");
+            String nombre = u.optString("name");
+            funcionarios.add(new Funcionario(uid, ci, nombre));
         }
+        bindSeleccionados();
+        lbl_titulo.setText("Administrar Funcionarios " + terminal.getNombre());
+        lbl_filtrados.textProperty().bind(
+                Bindings.size(funcionariosFiltrados).asString()
+        );
+
+        lbl_respaldados.textProperty().bind(
+                Bindings.size(respaldadosFiltrados).asString()
+        );
     }
 
     private void aplicarFiltro(String texto) {
@@ -299,7 +347,6 @@ public class AdmFuncionariosController implements Initializable {
 
     @FXML
     public void respaldar() {
-
         List<Funcionario> seleccionados = getSeleccionados();
         if (seleccionados.isEmpty()) {
             ToastController toast = ToastController.createToast(
@@ -310,17 +357,14 @@ public class AdmFuncionariosController implements Initializable {
             toast.show(mc.root);
             return;
         }
-
         FileChooser fileChooser = new FileChooser();
         fileChooser.setTitle("Guardar respaldo");
         fileChooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("Respaldo (*.json)", "*.json")
         );
-
         File destino = fileChooser.showSaveDialog(
                 btn_respaldar.getScene().getWindow()
         );
-
         if (destino == null) {
             return; // usuario canceló
         }
@@ -337,14 +381,12 @@ public class AdmFuncionariosController implements Initializable {
             );
             // 3️⃣ Guardar archivo
             guardarArchivo(destino, json);
-
             ToastController toast = ToastController.createToast(
                     "success",
                     "Respaldo generado",
                     "El respaldo se guardó correctamente"
             );
             toast.show(mc.root);
-
         } catch (Exception e) {
             ToastController toast = ToastController.createToast(
                     "error",
@@ -357,7 +399,7 @@ public class AdmFuncionariosController implements Initializable {
     }
 
     @FXML
-    public void cargarRespaldo() {
+    public void cargarRespaldo() throws IOException {
         FileChooser fc = new FileChooser();
         fc.setTitle("Seleccionar respaldo");
         fc.getExtensionFilters().add(
@@ -367,9 +409,44 @@ public class AdmFuncionariosController implements Initializable {
         if (archivo == null)
             return;
         else {
+            ObservableList<FuncionarioRespaldado> res = parsearRespaldo(leerArchivo(archivo));
+            respaldados.setAll(res);
+            mostrarCargarRespaldo();
             ToastController toast = ToastController.createToast("info", "Información", archivo.toString());
             toast.show(mc.root);
         }
+    }
+
+    private String leerArchivo(File archivo) throws IOException {
+        return new String(
+                java.nio.file.Files.readAllBytes(archivo.toPath()),
+                java.nio.charset.StandardCharsets.UTF_8
+        );
+    }
+
+    private ObservableList<FuncionarioRespaldado> parsearRespaldo(String json) {
+        ObservableList<FuncionarioRespaldado> lista = FXCollections.observableArrayList();
+        JSONObject root = new JSONObject(json);
+        JSONArray usuarios = root.getJSONArray("usuarios");
+
+        for (int i = 0; i < usuarios.length(); i++) {
+            JSONObject u = usuarios.getJSONObject(i);
+            int uidOrigen = u.optInt("uid_origen", 0);
+            int ci = u.optInt("user_id", 0);
+            String nombre = u.optString("name", "");
+            int privilegio = u.optInt("privilege", 0);
+            JSONArray huellasJson = u.optJSONArray("huellas");
+            List<Huella> huellas = new ArrayList<>();
+            if (huellasJson != null) {
+                for (int j = 0; j < huellasJson.length(); j++) {
+                    JSONObject h = huellasJson.getJSONObject(j);
+                    Huella huella = new Huella(h.getInt("fid"), h.getInt("size"), h.getInt("valid"), h.getString("template"));
+                    huellas.add(huella);
+                }
+            }
+            lista.add(new FuncionarioRespaldado(uidOrigen, ci, nombre, privilegio, huellas));
+        }
+        return lista;
     }
 
     private void mostrarVistaOverlay(VBox vistaAMostrar) {
@@ -379,7 +456,6 @@ public class AdmFuncionariosController implements Initializable {
                 vb_confirmar_eliminar,
                 vb_reporte_eliminacion
         };
-
         for (VBox v : todasLasVistas) {
             if (v == vistaAMostrar) { // Comparación de identidad (referencia)
                 v.setVisible(true);
@@ -400,5 +476,94 @@ public class AdmFuncionariosController implements Initializable {
         )) {
             writer.write(contenido);
         }
+    }
+
+    @FXML
+    private void mostrarCargarRespaldo() {
+        vb_funcionarios.setVisible(false);
+        vb_funcionarios.setManaged(false);
+        vb_cargar_respaldo.setVisible(true);
+        vb_cargar_respaldo.setManaged(true);
+    }
+
+    @FXML
+    private void verFuncionarios() {
+        vb_cargar_respaldo.setVisible(false);
+        vb_cargar_respaldo.setManaged(false);
+        vb_funcionarios.setVisible(true);
+        vb_funcionarios.setManaged(true);
+    }
+
+    private String generarJSONRestauracion( List<FuncionarioRespaldado> seleccionados, String ipTerminal) {
+        JSONObject root = new JSONObject();
+        root.put("accion", "restaurar");
+        root.put("terminal_ip", ipTerminal);
+        JSONArray respaldados = new JSONArray();
+        for (FuncionarioRespaldado f : seleccionados) {
+            respaldados.put(f.toJSON());
+        }
+        root.put("respaldados", respaldados);
+        return root.toString();
+    }
+
+    @FXML
+    public void agregarEnBiometrico() {
+        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+        confirmacion.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        confirmacion.setTitle("Confirmación");
+        confirmacion.setHeaderText("¿Deseas restaurar estos funcionarios?");
+        String json = generarJSONRestauracion(getSeleccionadosRespaldados(), terminal.ip);
+        //System.out.println(json);
+        Label label = new Label("Se restauraran los datos y huellas de los funcioanrios seleccionados");
+        label.setWrapText(true);
+        label.setStyle("-fx-padding: 10;");
+        confirmacion.getDialogPane().setContent(label);
+        Optional<ButtonType> result = confirmacion.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.OK) {
+            try {
+                String respuesta = ejecutarScriptPythonConStdin("scriptpy/restaurar_respaldo.py", json);
+                System.out.println(respuesta);
+                ToastController.createToast("success", "Listo!", "Comando enviado").show(mc.root);
+            } catch (IOException e) {
+                e.printStackTrace();
+                ToastController.createToast("error", "Error", "No se restaurar").show(mc.root);
+            }
+        }
+    }
+
+    private List<FuncionarioRespaldado> getSeleccionadosRespaldados() {
+        List<FuncionarioRespaldado> seleccionados = new ArrayList<>();
+        for (FuncionarioRespaldado fr : respaldados) {
+            if (fr.isSeleccionado()) {
+                seleccionados.add(fr);
+            }
+        }
+        return seleccionados;
+    }
+
+    public static String ejecutarScriptPythonConStdin(String scriptPath, String jsonInput) throws IOException {
+        String os = System.getProperty("os.name").toLowerCase();
+        String comandoPython = os.contains("win") ? "python" : "python3";
+        ProcessBuilder pb = new ProcessBuilder(comandoPython, scriptPath);
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
+        // 🔹 Enviar JSON por stdin
+        try (BufferedWriter writer = new BufferedWriter(
+                new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8)
+        )) {
+            writer.write(jsonInput);
+            writer.flush();
+        }
+        // 🔹 Leer respuesta
+        StringBuilder output = new StringBuilder();
+        try (BufferedReader reader = new BufferedReader(
+                new InputStreamReader(process.getInputStream(), StandardCharsets.UTF_8)
+        )) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                output.append(line).append("\n");
+            }
+        }
+        return output.toString();
     }
 }

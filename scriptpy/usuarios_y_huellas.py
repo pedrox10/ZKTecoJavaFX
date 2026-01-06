@@ -4,25 +4,21 @@ import sys, json
 zk_ip = sys.argv[1]
 zk_port = 4370
 timeout = 30
-
 user_ids_filtrar = []
 if len(sys.argv) > 2 and sys.argv[2].strip():
     user_ids_filtrar = [
         u.strip() for u in sys.argv[2].split(",")
         if u.strip()
     ]
-
 zk = ZK(zk_ip, port=zk_port, timeout=timeout)
 
 resultado = {
     "accion": "respaldo",
     "usuarios": []
 }
-
 try:
     conn = zk.connect()
     users = conn.get_users()
-
     for user in users:
         # 🔹 Filtrar por USER_ID (CI)
         if user_ids_filtrar and user.user_id not in user_ids_filtrar:

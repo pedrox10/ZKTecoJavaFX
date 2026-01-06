@@ -6,7 +6,6 @@ import javafx.beans.property.SimpleBooleanProperty;
 public class Funcionario {
 
     private final BooleanProperty seleccionado = new SimpleBooleanProperty(false);
-
     private int uid;
     private int ci;
     private String nombre;
