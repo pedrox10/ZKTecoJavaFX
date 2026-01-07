@@ -15,13 +15,11 @@ import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.FileChooser;
-import models.Funcionario;
-import models.FuncionarioRespaldado;
-import models.Huella;
-import models.ReporteEliminacion;
-import models.Terminal;
+import javafx.stage.Stage;
+import models.*;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import javafx.concurrent.Task;
 
 import java.io.*;
 import java.net.URL;
@@ -40,6 +38,8 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_ci;
     public VBox vb_confirmar_eliminar;
     public VBox vb_reporte_eliminacion;
+    public VBox vb_reporte_restauracion;
+    public VBox vb_cargando;
     public Button btn_respaldar;
     public Button btn_cargar;
     public Label icon_eliminar;
@@ -57,6 +57,11 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_nombre_reporte;
     public TableColumn tc_mensaje_reporte;
     public TableColumn tc_icono;
+    public TableView<ReporteRestauracion> tv_restaurados;
+    public TableColumn tc_num_restaurado;
+    public TableColumn tc_nombre_restaurado;
+    public TableColumn tc_mensaje_restaurado;
+    public TableColumn tc_icono_restaurado;
     public VBox vb_funcionarios;
     public VBox vb_cargar_respaldo;
     public Label lbl_respaldados;
@@ -65,6 +70,7 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_nombre_respaldado;
     public TableColumn tc_ci_respaldado;
     public TableColumn<FuncionarioRespaldado, Integer> tc_num_huellas;
+    public TableColumn tc_rol;
 
     Terminal terminal= null;
     MainController mc = null;
@@ -170,6 +176,33 @@ public class AdmFuncionariosController implements Initializable {
             }
         });
 
+        tc_num_restaurado.setCellFactory(col -> new TableCell<ReporteEliminacion, Number>() {
+            @Override
+            protected void updateItem(Number item, boolean empty) {
+                super.updateItem(item, empty);
+                if (empty)
+                    setText(null);
+                else
+                    setText(String.valueOf(getIndex() + 1));
+            }
+        });
+        tc_nombre_restaurado.setCellValueFactory(new PropertyValueFactory<>("nombre"));
+        tc_mensaje_restaurado.setCellValueFactory(new PropertyValueFactory<>("mensaje"));
+        tc_icono_restaurado.setCellValueFactory(new PropertyValueFactory<>("exito"));
+        tc_icono_restaurado.setCellFactory(col -> new TableCell<ReporteEliminacion, Boolean>() {
+            @Override
+            protected void updateItem(Boolean exito, boolean empty) {
+                super.updateItem(exito, empty);
+                if (empty || exito == null) {
+                    setText(null);
+                } else {
+                    setText(exito ? "\ue86c" : "\ue5c9");
+                    getStyleClass().add("icon");
+                    getStyleClass().setAll(exito ? "label-verde" : "label-rojo");
+                }
+            }
+        });
+
         respaldadosFiltrados = new FilteredList<>(respaldados, f -> true);
         tv_respaldados.setItems(respaldadosFiltrados);
         tc_check_respaldado.setCellValueFactory(cellData ->
@@ -212,6 +245,7 @@ public class AdmFuncionariosController implements Initializable {
         tc_num_huellas.setCellValueFactory(cd ->
                 new ReadOnlyObjectWrapper<>(cd.getValue().getCantidadHuellas())
         );
+        tc_rol.setCellValueFactory(new PropertyValueFactory<>("privilegio"));
     }
 
     public void initData(Terminal terminal, MainController mc) throws IOException {
@@ -454,7 +488,9 @@ public class AdmFuncionariosController implements Initializable {
         // Creamos un array con todas las vistas que residen en el StackPane
         VBox[] todasLasVistas = {
                 vb_confirmar_eliminar,
-                vb_reporte_eliminacion
+                vb_reporte_eliminacion,
+                vb_reporte_restauracion,
+                vb_cargando
         };
         for (VBox v : todasLasVistas) {
             if (v == vistaAMostrar) { // Comparación de identidad (referencia)
@@ -507,28 +543,89 @@ public class AdmFuncionariosController implements Initializable {
     }
 
     @FXML
-    public void agregarEnBiometrico() {
+    public void restaurarEnBiometrico() {
         Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+        confirmacion.getDialogPane().getStylesheets()
+                .add(Main.class.getResource("/styles/global.css").toExternalForm());
         confirmacion.setTitle("Confirmación");
         confirmacion.setHeaderText("¿Deseas restaurar estos funcionarios?");
-        String json = generarJSONRestauracion(getSeleccionadosRespaldados(), terminal.ip);
-        //System.out.println(json);
-        Label label = new Label("Se restauraran los datos y huellas de los funcioanrios seleccionados");
+        String jsonEnvio = generarJSONRestauracion(
+                getSeleccionadosRespaldados(),
+                terminal.ip
+        );
+        Label label = new Label("Se restaurarán los datos y huellas de los funcionarios seleccionados");
         label.setWrapText(true);
         label.setStyle("-fx-padding: 10;");
         confirmacion.getDialogPane().setContent(label);
         Optional<ButtonType> result = confirmacion.showAndWait();
-        if (result.isPresent() && result.get() == ButtonType.OK) {
-            try {
-                String respuesta = ejecutarScriptPythonConStdin("scriptpy/restaurar_respaldo.py", json);
-                System.out.println(respuesta);
-                ToastController.createToast("success", "Listo!", "Comando enviado").show(mc.root);
-            } catch (IOException e) {
-                e.printStackTrace();
-                ToastController.createToast("error", "Error", "No se restaurar").show(mc.root);
-            }
+        if (!result.isPresent() || result.get() != ButtonType.OK) {
+            return;
         }
+        // 🔹 Mostrar overlay de carga
+        mostrarVistaOverlay(vb_cargando);
+        // 🔹 Tarea en segundo plano
+        Task<JSONObject> task = new Task<JSONObject>() {
+            @Override
+            protected JSONObject call() throws Exception {
+                String respuesta = ejecutarScriptPythonConStdin(
+                        "scriptpy/restaurar_respaldo.py",
+                        jsonEnvio
+                );
+                return new JSONObject(respuesta);
+            }
+        };
+        // 🔹 Cuando termina OK
+        task.setOnSucceeded(e -> {
+            overlay.setVisible(false);
+            JSONObject json = task.getValue();
+            boolean exito = json.optBoolean("exito", false);
+            if (exito) {
+                ToastController.createToast(
+                        "success",
+                        "Comando enviado",
+                        json.optString("mensaje")
+                ).show(mc.root);
+                JSONArray resultados = json.getJSONArray("resultados");
+                ObservableList<ReporteRestauracion> data = FXCollections.observableArrayList();
+                for (int i = 0; i < resultados.length(); i++) {
+                    JSONObject r = resultados.getJSONObject(i);
+                    data.add(new ReporteRestauracion(
+                            r.optInt("ci"),
+                            r.optString("nombre"),
+                            r.optString("mensaje"),
+                            r.optBoolean("exito")
+                    ));
+                }
+                tv_restaurados.setItems(data);
+                mostrarVistaOverlay(vb_reporte_restauracion);
+            } else {
+                ToastController.createToast(
+                        "error",
+                        "Error",
+                        json.optString("mensaje")
+                ).show(mc.root);
+            }
+        });
+        // 🔹 Cuando falla
+        task.setOnFailed(e -> {
+            overlay.setVisible(false);
+            Throwable ex = task.getException();
+            ToastController.createToast(
+                    "error",
+                    "Error",
+                    ex.getMessage()
+            ).show(mc.root);
+        });
+        // 🔹 Ejecutar
+        new Thread(task, "restaurar-biometrico-thread").start();
+    }
+
+    @FXML
+    public void cerrarReporteRestauracion() {
+        Stage stage = (Stage) btn_cargar.getScene().getWindow();
+        stage.close();
+        mc.pane_mascara.toBack();
+        mc.pane_mascara.setVisible(false);
     }
 
     private List<FuncionarioRespaldado> getSeleccionadosRespaldados() {

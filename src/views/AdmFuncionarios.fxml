@@ -6,6 +6,7 @@
 <?import javafx.scene.control.CheckBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ProgressIndicator?>
 <?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -28,7 +29,7 @@
             </Label>
          </children>
       </HBox>
-      <VBox fx:id="vb_funcionarios" alignment="TOP_CENTER" visible="false" AnchorPane.topAnchor="60.0">
+      <VBox fx:id="vb_funcionarios" alignment="TOP_CENTER" AnchorPane.topAnchor="60.0">
          <children>
             <HBox alignment="CENTER_LEFT" spacing="10.0">
                <padding>
@@ -100,6 +101,65 @@
             </TableView>
          </children>
       </VBox>
+      <VBox fx:id="vb_cargar_respaldo" prefHeight="200.0" prefWidth="100.0" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
+         <children>
+            <HBox alignment="CENTER_LEFT" spacing="10.0">
+               <padding>
+                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+               </padding>
+               <children>
+                  <Button focusTraversable="false" mnemonicParsing="false" onAction="#verFuncionarios" style="-fx-border-color: #DDD;" styleClass="icon-button" text="" />
+                  <VBox>
+                     <children>
+                        <HBox>
+                           <children>
+                              <Label styleClass="label-titulo" text="Buscar Funcionario" />
+                              <Region HBox.hgrow="ALWAYS" />
+                              <Label fx:id="lbl_respaldados" layoutX="10.0" layoutY="10.0" style="-: ;" styleClass="label-titulo" text="0" />
+                           </children>
+                        </HBox>
+                        <TextField fx:id="tf_buscar_respaldado" minWidth="250.0" style="-fx-padding: 0.75em 0.5em 0.75em 0.5em;" />
+                     </children>
+                  </VBox>
+                  <VBox>
+                     <children>
+                        <HBox>
+                           <children>
+                              <Label styleClass="label-secundario" text="Seleccionados: " />
+                              <Label fx:id="lbl_seleccionados_respaldados" layoutX="10.0" layoutY="10.0" styleClass="label-secundario" />
+                           </children>
+                        </HBox>
+                        <HBox spacing="5.0">
+                           <children>
+                              <Button fx:id="btn_agregar_respaldados" mnemonicParsing="false" onAction="#restaurarEnBiometrico" text="Restaurar en Biométrico">
+                                 <styleClass>
+                                    <String fx:value="verde" />
+                                    <String fx:value="icon-left" />
+                                 </styleClass>
+                                 <graphic>
+                                    <Label fx:id="icon_respaldar1" styleClass="icon" text="" />
+                                 </graphic>
+                              </Button>
+                           </children>
+                        </HBox>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+            <TableView fx:id="tv_respaldados" prefHeight="490.0">
+               <columns>
+                  <TableColumn fx:id="tc_check_respaldado" prefWidth="50.0" sortable="false" />
+                  <TableColumn fx:id="tc_nombre_respaldado" prefWidth="325.0" sortable="false" text="Nombre" />
+                  <TableColumn fx:id="tc_ci_respaldado" minWidth="0.0" prefWidth="145.0" sortable="false" text="CI" />
+                  <TableColumn fx:id="tc_num_huellas" prefWidth="75.0" sortable="false" text="# Huellas" />
+                  <TableColumn fx:id="tc_rol" prefWidth="50.0" sortable="false" text="Rol" />
+               </columns>
+               <padding>
+                  <Insets left="5.0" right="5.0" />
+               </padding>
+            </TableView>
+         </children>
+      </VBox>
       <StackPane fx:id="overlay" styleClass="overlay" visible="false" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
          <children>
             <VBox fx:id="vb_confirmar_eliminar" maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card">
@@ -158,7 +218,7 @@
                   </HBox>
                   <TableView fx:id="tv_reporte">
                     <columns>
-                      <TableColumn fx:id="tc_num_reporte" prefWidth="45.0" text="#" />
+                      <TableColumn fx:id="tc_num_reporte" prefWidth="35.0" text="#" />
                       <TableColumn fx:id="tc_nombre_reporte" prefWidth="225.0" text="Nombre" />
                         <TableColumn fx:id="tc_mensaje_reporte" prefWidth="255.0" text="Mensaje" />
                         <TableColumn fx:id="tc_icono" prefWidth="22.0" />
@@ -166,65 +226,41 @@
                   </TableView>
                </children>
             </VBox>
+            <VBox fx:id="vb_reporte_restauracion" layoutX="52.0" layoutY="177.0" maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card" visible="false">
+               <children>
+                  <HBox>
+                     <children>
+                        <Label styleClass="titulo" text="Reporte Restauración" />
+                        <Region prefHeight="200.0" prefWidth="200.0" HBox.hgrow="ALWAYS" />
+                        <Label fx:id="lbl_cerrar_restauracion" alignment="CENTER" contentDisplay="CENTER" maxHeight="16.0" maxWidth="16.0" onMouseClicked="#cerrarReporteRestauracion" prefHeight="16.0" prefWidth="16.0" text="x" textAlignment="CENTER">
+                           <font>
+                              <Font size="11.0" />
+                           </font>
+                           <styleClass>
+                              <String fx:value="circle" />
+                              <String fx:value="hand" />
+                              <String fx:value="azul" />
+                           </styleClass>
+                        </Label>
+                     </children>
+                  </HBox>
+                  <TableView fx:id="tv_restaurados">
+                     <columns>
+                        <TableColumn fx:id="tc_num_restaurado" prefWidth="35.0" text="#" />
+                        <TableColumn fx:id="tc_nombre_restaurado" prefWidth="225.0" text="Nombre" />
+                        <TableColumn fx:id="tc_mensaje_restaurado" prefWidth="255.0" text="Mensaje" />
+                        <TableColumn fx:id="tc_icono_restaurado" prefWidth="22.0" />
+                     </columns>
+                  </TableView>
+               </children>
+            </VBox>
+            <VBox fx:id="vb_cargando" alignment="CENTER" layoutX="52.0" layoutY="177.0" maxHeight="300.0" maxWidth="600.0" spacing="10.0" styleClass="dialog-card" visible="false">
+               <children>
+                  <ProgressIndicator prefHeight="75.0" prefWidth="75.0" />
+                  <Label styleClass="titulo" text="Restaurando funcionarios ..." />
+               </children>
+            </VBox>
          </children>
       </StackPane>
-      <VBox fx:id="vb_cargar_respaldo" prefHeight="200.0" prefWidth="100.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="60.0">
-         <children>
-            <HBox alignment="CENTER_LEFT" spacing="10.0">
-               <padding>
-                  <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
-               </padding>
-               <children>
-                  <Button focusTraversable="false" mnemonicParsing="false" onAction="#verFuncionarios" style="-fx-border-color: #DDD;" styleClass="icon-button" text="" />
-                  <VBox>
-                     <children>
-                        <HBox>
-                           <children>
-                              <Label styleClass="label-titulo" text="Buscar Funcionario" />
-                              <Region HBox.hgrow="ALWAYS" />
-                              <Label fx:id="lbl_respaldados" layoutX="10.0" layoutY="10.0" style="-: ;" styleClass="label-titulo" text="0" />
-                           </children>
-                        </HBox>
-                        <TextField fx:id="tf_buscar_respaldado" minWidth="250.0" style="-fx-padding: 0.75em 0.5em 0.75em 0.5em;" />
-                     </children>
-                  </VBox>
-                  <VBox>
-                     <children>
-                        <HBox>
-                           <children>
-                              <Label styleClass="label-secundario" text="Seleccionados: " />
-                              <Label fx:id="lbl_seleccionados_respaldados" layoutX="10.0" layoutY="10.0" styleClass="label-secundario" />
-                           </children>
-                        </HBox>
-                        <HBox spacing="5.0">
-                           <children>
-                              <Button fx:id="btn_agregar_respaldados" mnemonicParsing="false" onAction="#agregarEnBiometrico" text="Agregar en Biométrico">
-                                 <styleClass>
-                                    <String fx:value="verde" />
-                                    <String fx:value="icon-left" />
-                                 </styleClass>
-                                 <graphic>
-                                    <Label fx:id="icon_respaldar1" styleClass="icon" text="" />
-                                 </graphic>
-                              </Button>
-                           </children>
-                        </HBox>
-                     </children>
-                  </VBox>
-               </children>
-            </HBox>
-            <TableView fx:id="tv_respaldados" prefHeight="490.0">
-               <columns>
-                  <TableColumn fx:id="tc_check_respaldado" prefWidth="50.0" sortable="false" />
-                  <TableColumn fx:id="tc_nombre_respaldado" prefWidth="375.0" sortable="false" text="Nombre" />
-                  <TableColumn fx:id="tc_ci_respaldado" minWidth="0.0" prefWidth="145.0" sortable="false" text="CI" />
-                  <TableColumn fx:id="tc_num_huellas" prefWidth="75.0" sortable="false" text="# Huellas" />
-               </columns>
-               <padding>
-                  <Insets left="5.0" right="5.0" />
-               </padding>
-            </TableView>
-         </children>
-      </VBox>
    </children>
 </AnchorPane>
