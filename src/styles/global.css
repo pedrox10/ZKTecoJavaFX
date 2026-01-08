@@ -937,3 +937,7 @@
 .label-verde {
 	-fx-text-fill: #2e7d32;
 }
+
+.label-azul {
+	-fx-text-fill: #032dd0;
+}

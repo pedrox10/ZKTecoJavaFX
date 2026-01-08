@@ -6,17 +6,11 @@ import org.json.JSONObject;
 
 public class FuncionarioRespaldado extends Funcionario {
 
-    private int privilegio;
     private List<Huella> huellas;
 
     public FuncionarioRespaldado(int uid, int ci, String nombre, int privilegio, List<Huella> huellas) {
-        super(uid, ci, nombre);
-        this.privilegio = privilegio;
+        super(uid, ci, nombre, privilegio);
         this.huellas = huellas;
-    }
-
-    public int getPrivilegio() {
-        return privilegio;
     }
 
     public List<Huella> getHuellas() {
@@ -44,7 +38,6 @@ public class FuncionarioRespaldado extends Funcionario {
                 huellasArray.put(jh);
             }
         }
-
         json.put("huellas", huellasArray);
         return json;
     }

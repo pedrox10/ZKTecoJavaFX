@@ -24,7 +24,6 @@ import javafx.concurrent.Task;
 import java.io.*;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.Paths;
 import java.util.*;
 
 public class AdmFuncionariosController implements Initializable {
@@ -36,6 +35,7 @@ public class AdmFuncionariosController implements Initializable {
     public TableColumn tc_num;
     public TableColumn tc_nombre;
     public TableColumn tc_ci;
+    public TableColumn tc_rol;
     public VBox vb_confirmar_eliminar;
     public VBox vb_reporte_eliminacion;
     public VBox vb_reporte_restauracion;
@@ -47,6 +47,7 @@ public class AdmFuncionariosController implements Initializable {
     public Label icon_cargar;
     public TextField tf_busqueda;
     public Label lbl_seleccionados;
+    public Label lbl_seleccionados_respaldados;
     public Label lbl_filtrados;
     public StackPane overlay;
     public CheckBox cb_confirmar_eliminar;
@@ -65,12 +66,13 @@ public class AdmFuncionariosController implements Initializable {
     public VBox vb_funcionarios;
     public VBox vb_cargar_respaldo;
     public Label lbl_respaldados;
+    public TextField tf_buscar_respaldado;
     public TableView<FuncionarioRespaldado> tv_respaldados;
     public TableColumn<FuncionarioRespaldado, Boolean> tc_check_respaldado;
     public TableColumn tc_nombre_respaldado;
     public TableColumn tc_ci_respaldado;
     public TableColumn<FuncionarioRespaldado, Integer> tc_num_huellas;
-    public TableColumn tc_rol;
+    public TableColumn tc_rol_respaldado;
 
     Terminal terminal= null;
     MainController mc = null;
@@ -138,6 +140,22 @@ public class AdmFuncionariosController implements Initializable {
                 setGraphic(checkBox);
             }
         });
+        tc_rol.setCellValueFactory(new PropertyValueFactory<>("privilegio"));
+        tc_rol.setCellFactory(col -> new TableCell<Funcionario, Integer>() {
+            @Override
+            protected void updateItem(Integer valor, boolean empty) {
+                super.updateItem(valor, empty);
+                if (empty || valor == null) {
+                    setText(null);
+                } else {
+                    if(valor.intValue() == 0) {
+                        setText("Usuario");
+                    } else {
+                        setText("Administrador");
+                    }
+                }
+            }
+        });
         icon_eliminar.setText("\ue7ad");
         icon_respaldar.setText("\ueb60");
         icon_cargar.setText("\ue9fc");
@@ -145,6 +163,9 @@ public class AdmFuncionariosController implements Initializable {
         tv_funcionarios.setItems(funcionariosFiltrados);
         tf_busqueda.textProperty().addListener((obs, oldText, newText) -> {
             aplicarFiltro(newText);
+        });
+        tf_buscar_respaldado.textProperty().addListener((obs, oldText, newText) -> {
+            filtrarRespaldados(newText);
         });
         btn_aceptar_eliminar.disableProperty().bind(
                 cb_confirmar_eliminar.selectedProperty().not()
@@ -205,6 +226,15 @@ public class AdmFuncionariosController implements Initializable {
 
         respaldadosFiltrados = new FilteredList<>(respaldados, f -> true);
         tv_respaldados.setItems(respaldadosFiltrados);
+        CheckBox checkRespaldados = new CheckBox();
+        checkRespaldados.getStyleClass().add("negro");
+        checkRespaldados.setOnAction(e -> {
+            boolean seleccionado = checkRespaldados.isSelected();
+            for (FuncionarioRespaldado f : tv_respaldados.getItems()) {
+                f.setSeleccionado(seleccionado);
+            }
+        });
+        tc_check_respaldado.setGraphic(checkRespaldados);
         tc_check_respaldado.setCellValueFactory(cellData ->
                 cellData.getValue().seleccionadoProperty()
         );
@@ -230,12 +260,10 @@ public class AdmFuncionariosController implements Initializable {
                     setGraphic(null);
                     return;
                 }
-                // 🔥 desbindear el anterior
                 if (currentFuncionario != null) {
                     checkBox.selectedProperty().unbindBidirectional(currentFuncionario.seleccionadoProperty());
                 }
                 currentFuncionario = f;
-                // 🔥 bind correcto
                 checkBox.selectedProperty().bindBidirectional(f.seleccionadoProperty());
                 setGraphic(checkBox);
             }
@@ -245,7 +273,22 @@ public class AdmFuncionariosController implements Initializable {
         tc_num_huellas.setCellValueFactory(cd ->
                 new ReadOnlyObjectWrapper<>(cd.getValue().getCantidadHuellas())
         );
-        tc_rol.setCellValueFactory(new PropertyValueFactory<>("privilegio"));
+        tc_rol_respaldado.setCellValueFactory(new PropertyValueFactory<>("privilegio"));
+        tc_rol_respaldado.setCellFactory(col -> new TableCell<Funcionario, Integer>() {
+            @Override
+            protected void updateItem(Integer valor, boolean empty) {
+                super.updateItem(valor, empty);
+                if (empty || valor == null) {
+                    setText(null);
+                } else {
+                    if(valor.intValue() == 0) {
+                        setText("Usuario");
+                    } else {
+                        setText("Administrador");
+                    }
+                }
+            }
+        });
     }
 
     public void initData(Terminal terminal, MainController mc) throws IOException {
@@ -253,8 +296,8 @@ public class AdmFuncionariosController implements Initializable {
         this.mc = mc;
         String usuariosJson = null;
         usuariosJson = TerminalController.ejecutarScriptPython("scriptpy/usuarios.py", terminal.ip, terminal.puerto + "");
-        System.out.println(usuariosJson);
         //usuariosJson = "[{\"uid\":1,\"password\":\"\",\"user_id\":\"1\",\"group_id\":\"\",\"name\":\"DENILSON\",\"privilege\":14},{\"uid\":2,\"password\":\"\",\"user_id\":\"7920529\",\"group_id\":\"\",\"name\":\"LINETH CASTELLON GOMEZ\",\"privilege\":0},{\"uid\":3,\"password\":\"\",\"user_id\":\"2396993\",\"group_id\":\"\",\"name\":\"FABIOLA SANCHEZ ORTIZ\",\"privilege\":0},{\"uid\":4,\"password\":\"\",\"user_id\":\"7996541\",\"group_id\":\"\",\"name\":\"IVAN ALCONZ LEDEZMA\",\"privilege\":0},{\"uid\":6,\"password\":\"\",\"user_id\":\"4440091\",\"group_id\":\"\",\"name\":\"YURI ARELLANO  DELGADO\",\"privilege\":0},{\"uid\":7,\"password\":\"\",\"user_id\":\"5205968\",\"group_id\":\"\",\"name\":\"SIXTO SERRUDO VARGAS\",\"privilege\":0},{\"uid\":8,\"password\":\"\",\"user_id\":\"3\",\"group_id\":\"\",\"name\":\"FREDY\",\"privilege\":14},{\"uid\":9,\"password\":\"\",\"user_id\":\"4094083\",\"group_id\":\"\",\"name\":\"CLAUDIA M ROJAS VALENCIA\",\"privilege\":0},{\"uid\":10,\"password\":\"\",\"user_id\":\"5224790\",\"group_id\":\"\",\"name\":\"NICOLAS B SAAVEDRA ROMER\",\"privilege\":0},{\"uid\":11,\"password\":\"\",\"user_id\":\"8825808\",\"group_id\":\"\",\"name\":\"ELIANA D  MAMANI HUARANC\",\"privilege\":0},{\"uid\":13,\"password\":\"\",\"user_id\":\"7884667\",\"group_id\":\"\",\"name\":\"GONZALO ROJAS ROJAS\",\"privilege\":0},{\"uid\":14,\"password\":\"\",\"user_id\":\"2899783\",\"group_id\":\"\",\"name\":\"ERASMO CORRALES\",\"privilege\":0},{\"uid\":16,\"password\":\"\",\"user_id\":\"6458199\",\"group_id\":\"\",\"name\":\"ANAHI MEYBOL SOLIZ\",\"privilege\":0},{\"uid\":17,\"password\":\"\",\"user_id\":\"7920665\",\"group_id\":\"\",\"name\":\"WALTER ERQUICIA ADRIAN\",\"privilege\":0},{\"uid\":18,\"password\":\"\",\"user_id\":\"13996188\",\"group_id\":\"\",\"name\":\"ELIUD CAMATA GONZALES\",\"privilege\":0},{\"uid\":24,\"password\":\"\",\"user_id\":\"7928174\",\"group_id\":\"\",\"name\":\"GERMAN TARQUI OLIVERA\",\"privilege\":0},{\"uid\":25,\"password\":\"\",\"user_id\":\"5276494\",\"group_id\":\"\",\"name\":\"MAGDA ORELLANA CACERES\",\"privilege\":0},{\"uid\":26,\"password\":\"\",\"user_id\":\"8834355\",\"group_id\":\"\",\"name\":\"JAVIER IQUISI CAZORLA\",\"privilege\":0},{\"uid\":27,\"password\":\"\",\"user_id\":\"4422301\",\"group_id\":\"\",\"name\":\"JAVIER MORALES MAMANI\",\"privilege\":0},{\"uid\":29,\"password\":\"\",\"user_id\":\"9426350\",\"group_id\":\"\",\"name\":\"BILLY\",\"privilege\":14},{\"uid\":30,\"password\":\"\",\"user_id\":\"5206858\",\"group_id\":\"\",\"name\":\"MARTHA MORALES REVOLLO\",\"privilege\":0},{\"uid\":31,\"password\":\"\",\"user_id\":\"5906825\",\"group_id\":\"\",\"name\":\"ROLANDO AGUILAR ROJAS\",\"privilege\":0},{\"uid\":32,\"password\":\"\",\"user_id\":\"9413936\",\"group_id\":\"\",\"name\":\"JOSE LUIS HERNANDEZ\",\"privilege\":0},{\"uid\":33,\"password\":\"\",\"user_id\":\"7907930\",\"group_id\":\"\",\"name\":\"NEYVA TORRICO QUILO\",\"privilege\":0},{\"uid\":34,\"password\":\"\",\"user_id\":\"5972630\",\"group_id\":\"\",\"name\":\"VANESSA R VASQUEZ VILLEG\",\"privilege\":0},{\"uid\":35,\"password\":\"\",\"user_id\":\"6474500\",\"group_id\":\"\",\"name\":\"JAIME BRAVO CARVAJAL\",\"privilege\":0},{\"uid\":36,\"password\":\"\",\"user_id\":\"5191910\",\"group_id\":\"\",\"name\":\"EDWIN ESPINOZA MAMANI\",\"privilege\":0},{\"uid\":37,\"password\":\"\",\"user_id\":\"5274788\",\"group_id\":\"\",\"name\":\"GRISSEL PEREZ URNA\",\"privilege\":0}]";
+        System.out.println(usuariosJson);
         JSONArray usuariosJSON = new JSONArray(usuariosJson);
         funcionarios.clear();
         for (int i = 0; i < usuariosJSON.length(); i++) {
@@ -262,7 +305,8 @@ public class AdmFuncionariosController implements Initializable {
             int uid = u.optInt("uid");
             int ci = u.optInt("user_id");
             String nombre = u.optString("name");
-            funcionarios.add(new Funcionario(uid, ci, nombre));
+            int privilegio = u.optInt("privilege");
+            funcionarios.add(new Funcionario(uid, ci, nombre, privilegio));
         }
         bindSeleccionados();
         lbl_titulo.setText("Administrar Funcionarios " + terminal.getNombre());
@@ -283,9 +327,27 @@ public class AdmFuncionariosController implements Initializable {
         );
     }
 
+    private void filtrarRespaldados(String texto) {
+        String filtro = texto.toLowerCase().trim();
+        respaldadosFiltrados.setPredicate(f ->
+                f.getNombre().toLowerCase().contains(filtro) ||
+                        String.valueOf(f.getCi()).contains(filtro)
+        );
+    }
+
     private List<Funcionario> getSeleccionados() {
         List<Funcionario> seleccionados = new ArrayList<>();
         for (Funcionario f : funcionarios) {
+            if (f.isSeleccionado()) {
+                seleccionados.add(f);
+            }
+        }
+        return seleccionados;
+    }
+
+    private List<FuncionarioRespaldado> getSeleccionadosRespaldados() {
+        List<FuncionarioRespaldado> seleccionados = new ArrayList<>();
+        for (FuncionarioRespaldado f : respaldados) {
             if (f.isSeleccionado()) {
                 seleccionados.add(f);
             }
@@ -304,6 +366,19 @@ public class AdmFuncionariosController implements Initializable {
     private void actualizarSeleccionados() {
         long total = getSeleccionados().size();
         lbl_seleccionados.setText(total + "");
+    }
+
+    private void bindSeleccionadosRespaldados() {
+        respaldados.forEach(f ->
+                f.seleccionadoProperty().addListener((obs, old, val) ->
+                        actualizarSeleccionadosRespaldados()
+                )
+        );
+    }
+
+    private void actualizarSeleccionadosRespaldados() {
+        long total = getSeleccionadosRespaldados().size();
+        lbl_seleccionados_respaldados.setText(total + "");
     }
 
     @FXML
@@ -369,7 +444,6 @@ public class AdmFuncionariosController implements Initializable {
 
         } catch (IOException e) {
             e.printStackTrace();
-            // Mostrar alerta de error de conexión
         }
     }
 
@@ -403,17 +477,14 @@ public class AdmFuncionariosController implements Initializable {
             return; // usuario canceló
         }
         try {
-            // 1️⃣ Construir user_ids (CI)
             String userIds = seleccionados.stream()
                     .map(f -> String.valueOf(f.getCi()))
                     .collect(java.util.stream.Collectors.joining(","));
-            // 2️⃣ Ejecutar script
             String json = TerminalController.ejecutarScriptPython(
                     "scriptpy/usuarios_y_huellas.py",
                     terminal.ip,
                     userIds
             );
-            // 3️⃣ Guardar archivo
             guardarArchivo(destino, json);
             ToastController toast = ToastController.createToast(
                     "success",
@@ -444,7 +515,10 @@ public class AdmFuncionariosController implements Initializable {
             return;
         else {
             ObservableList<FuncionarioRespaldado> res = parsearRespaldo(leerArchivo(archivo));
+            respaldados.clear();
             respaldados.setAll(res);
+            lbl_seleccionados_respaldados.setText("");
+            bindSeleccionadosRespaldados();
             mostrarCargarRespaldo();
             ToastController toast = ToastController.createToast("info", "Información", archivo.toString());
             toast.show(mc.root);
@@ -544,80 +618,62 @@ public class AdmFuncionariosController implements Initializable {
 
     @FXML
     public void restaurarEnBiometrico() {
-        Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmacion.getDialogPane().getStylesheets()
-                .add(Main.class.getResource("/styles/global.css").toExternalForm());
-        confirmacion.setTitle("Confirmación");
-        confirmacion.setHeaderText("¿Deseas restaurar estos funcionarios?");
-        String jsonEnvio = generarJSONRestauracion(
-                getSeleccionadosRespaldados(),
-                terminal.ip
-        );
-        Label label = new Label("Se restaurarán los datos y huellas de los funcionarios seleccionados");
-        label.setWrapText(true);
-        label.setStyle("-fx-padding: 10;");
-        confirmacion.getDialogPane().setContent(label);
-        Optional<ButtonType> result = confirmacion.showAndWait();
-        if (!result.isPresent() || result.get() != ButtonType.OK) {
-            return;
-        }
-        // 🔹 Mostrar overlay de carga
-        mostrarVistaOverlay(vb_cargando);
-        // 🔹 Tarea en segundo plano
-        Task<JSONObject> task = new Task<JSONObject>() {
-            @Override
-            protected JSONObject call() throws Exception {
-                String respuesta = ejecutarScriptPythonConStdin(
-                        "scriptpy/restaurar_respaldo.py",
-                        jsonEnvio
-                );
-                return new JSONObject(respuesta);
+        if(getSeleccionadosRespaldados().size() > 0) {
+            Alert confirmacion = new Alert(Alert.AlertType.CONFIRMATION);
+            confirmacion.getDialogPane().getStylesheets().add(Main.class.getResource("/styles/global.css").toExternalForm());
+            confirmacion.setTitle("Confirmación");
+            confirmacion.setHeaderText("¿Deseas restaurar estos funcionarios?");
+            String jsonEnvio = generarJSONRestauracion(getSeleccionadosRespaldados(), terminal.ip);
+            Label label = new Label("Se restaurarán los datos y huellas de los funcionarios seleccionados");
+            label.setWrapText(true);
+            label.setStyle("-fx-padding: 10;");
+            confirmacion.getDialogPane().setContent(label);
+            Optional<ButtonType> result = confirmacion.showAndWait();
+            if (!result.isPresent() || result.get() != ButtonType.OK) {
+                return;
             }
-        };
-        // 🔹 Cuando termina OK
-        task.setOnSucceeded(e -> {
-            overlay.setVisible(false);
-            JSONObject json = task.getValue();
-            boolean exito = json.optBoolean("exito", false);
-            if (exito) {
-                ToastController.createToast(
-                        "success",
-                        "Comando enviado",
-                        json.optString("mensaje")
-                ).show(mc.root);
-                JSONArray resultados = json.getJSONArray("resultados");
-                ObservableList<ReporteRestauracion> data = FXCollections.observableArrayList();
-                for (int i = 0; i < resultados.length(); i++) {
-                    JSONObject r = resultados.getJSONObject(i);
-                    data.add(new ReporteRestauracion(
-                            r.optInt("ci"),
-                            r.optString("nombre"),
-                            r.optString("mensaje"),
-                            r.optBoolean("exito")
-                    ));
+            mostrarVistaOverlay(vb_cargando);
+            Task<JSONObject> task = new Task<JSONObject>() {
+                @Override
+                protected JSONObject call() throws Exception {
+                    String respuesta = ejecutarScriptPythonConStdin("scriptpy/restaurar_respaldo.py", jsonEnvio);
+                    /*String respuesta = "{"
+                            + "\"accion\":\"restaurar\"," + "\"exito\":true," + "\"mensaje\":\"Comando ejecutado correctamente.\\nRevisa los resultados por funcionario.\","
+                            + "\"resultados\":[" + "  {" + "    \"nombre\":\"ROSMERY MENECES ALMANZA\"," + "    \"ci\":\"6438594\"," + "    \"exito\":true," + "    \"mensaje\":\"Huellas restauradas: 3, fallidas: 0\""
+                            + "  }," + "  {"
+                            + "    \"nombre\":\"JUAN PEREZ\"," + "    \"ci\":\"1234567\"," + "    \"exito\":false," + "    \"mensaje\":\"El usuario ya existe en el terminal\""
+                            + "  }" + "]" + "}";*/
+                    return new JSONObject(respuesta);
                 }
-                tv_restaurados.setItems(data);
-                mostrarVistaOverlay(vb_reporte_restauracion);
-            } else {
-                ToastController.createToast(
-                        "error",
-                        "Error",
-                        json.optString("mensaje")
-                ).show(mc.root);
-            }
-        });
-        // 🔹 Cuando falla
-        task.setOnFailed(e -> {
-            overlay.setVisible(false);
-            Throwable ex = task.getException();
-            ToastController.createToast(
-                    "error",
-                    "Error",
-                    ex.getMessage()
-            ).show(mc.root);
-        });
-        // 🔹 Ejecutar
-        new Thread(task, "restaurar-biometrico-thread").start();
+            };
+            task.setOnSucceeded(e -> {
+                overlay.setVisible(false);
+                JSONObject json = task.getValue();
+                boolean exito = json.optBoolean("exito", false);
+                if (exito) {
+                    ToastController.createToast("success", "Comando enviado", json.optString("mensaje")).show(mc.root);
+                    JSONArray resultados = json.getJSONArray("resultados");
+                    ObservableList<ReporteRestauracion> data = FXCollections.observableArrayList();
+                    for (int i = 0; i < resultados.length(); i++) {
+                        JSONObject r = resultados.getJSONObject(i);
+                        data.add(new ReporteRestauracion(r.optInt("ci"), r.optString("nombre"), r.optString("mensaje"), r.optBoolean("exito")));
+                    }
+                    tv_restaurados.setItems(data);
+                    mostrarVistaOverlay(vb_reporte_restauracion);
+                } else {
+                    ToastController.createToast("error", "Error", json.optString("mensaje")).show(mc.root);
+                }
+            });
+            task.setOnFailed(e -> {
+                overlay.setVisible(false);
+                Throwable ex = task.getException();
+                ToastController.createToast("error", "Error", ex.getMessage()).show(mc.root);
+            });
+            new Thread(task, "restaurar-biometrico-thread").start();
+        } else {
+            ToastController toast = ToastController.createToast("info", "Información", "Debes seleccionar al menos un funcionario");
+            toast.show(mc.root);
+        }
     }
 
     @FXML
@@ -626,16 +682,6 @@ public class AdmFuncionariosController implements Initializable {
         stage.close();
         mc.pane_mascara.toBack();
         mc.pane_mascara.setVisible(false);
-    }
-
-    private List<FuncionarioRespaldado> getSeleccionadosRespaldados() {
-        List<FuncionarioRespaldado> seleccionados = new ArrayList<>();
-        for (FuncionarioRespaldado fr : respaldados) {
-            if (fr.isSeleccionado()) {
-                seleccionados.add(fr);
-            }
-        }
-        return seleccionados;
     }
 
     public static String ejecutarScriptPythonConStdin(String scriptPath, String jsonInput) throws IOException {

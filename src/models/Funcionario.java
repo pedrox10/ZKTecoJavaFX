@@ -9,11 +9,13 @@ public class Funcionario {
     private int uid;
     private int ci;
     private String nombre;
+    private int privilegio;
 
-    public Funcionario(int uid, int ci, String nombre) {
+    public Funcionario(int uid, int ci, String nombre, int privilegio) {
         this.uid = uid;
         this.ci = ci;
         this.nombre = nombre;
+        this.privilegio = privilegio;
     }
 
     public int getUid() {
@@ -38,6 +40,14 @@ public class Funcionario {
 
     public void setNombre(String nombre) {
         this.nombre = nombre;
+    }
+
+    public int getPrivilegio() {
+        return privilegio;
+    }
+
+    public void setPrivilegio(int privilegio) {
+        this.privilegio = privilegio;
     }
 
     public BooleanProperty seleccionadoProperty() {

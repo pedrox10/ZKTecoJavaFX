@@ -90,10 +90,11 @@
             </HBox>
             <TableView fx:id="tv_funcionarios" prefHeight="490.0">
                <columns>
-                  <TableColumn fx:id="tc_check" prefWidth="50.0" sortable="false" />
-                  <TableColumn fx:id="tc_num" prefWidth="50.0" sortable="false" text="#" />
-                  <TableColumn fx:id="tc_nombre" prefWidth="400.0" sortable="false" text="Nombre" />
-                  <TableColumn fx:id="tc_ci" minWidth="0.0" prefWidth="145.0" sortable="false" text="CI" />
+                  <TableColumn fx:id="tc_check" prefWidth="40.0" sortable="false" />
+                  <TableColumn fx:id="tc_num" prefWidth="40.0" sortable="false" text="#" />
+                  <TableColumn fx:id="tc_nombre" prefWidth="325.0" sortable="false" text="Nombre" />
+                  <TableColumn fx:id="tc_ci" minWidth="0.0" prefWidth="115.0" sortable="false" text="CI" />
+                  <TableColumn fx:id="tc_rol" minWidth="0.0" prefWidth="115.0" sortable="false" text="Rol" />
                </columns>
                <padding>
                   <Insets left="5.0" right="5.0" />
@@ -148,11 +149,11 @@
             </HBox>
             <TableView fx:id="tv_respaldados" prefHeight="490.0">
                <columns>
-                  <TableColumn fx:id="tc_check_respaldado" prefWidth="50.0" sortable="false" />
-                  <TableColumn fx:id="tc_nombre_respaldado" prefWidth="325.0" sortable="false" text="Nombre" />
-                  <TableColumn fx:id="tc_ci_respaldado" minWidth="0.0" prefWidth="145.0" sortable="false" text="CI" />
+                  <TableColumn fx:id="tc_check_respaldado" prefWidth="40.0" sortable="false" />
+                  <TableColumn fx:id="tc_nombre_respaldado" prefWidth="300.0" sortable="false" text="Nombre" />
+                  <TableColumn fx:id="tc_ci_respaldado" minWidth="0.0" prefWidth="115.0" sortable="false" text="CI" />
                   <TableColumn fx:id="tc_num_huellas" prefWidth="75.0" sortable="false" text="# Huellas" />
-                  <TableColumn fx:id="tc_rol" prefWidth="50.0" sortable="false" text="Rol" />
+                  <TableColumn fx:id="tc_rol_respaldado" prefWidth="115.0" sortable="false" text="Rol" />
                </columns>
                <padding>
                   <Insets left="5.0" right="5.0" />
